@@ -1,0 +1,50 @@
+import { seed } from "@/lib/seed";
+import ResumeCard from "@/components/dashboard/ResumeCard";
+import MasteryGrid from "@/components/dashboard/MasteryGrid";
+import ActivityChart from "@/components/dashboard/ActivityChart";
+import TodayPlan from "@/components/dashboard/TodayPlan";
+import DeadlineList from "@/components/dashboard/DeadlineList";
+import Recommendations from "@/components/dashboard/Recommendations";
+import RecentScores from "@/components/dashboard/RecentScores";
+import SystemHealth from "@/components/dashboard/SystemHealth";
+
+export default function DashboardPage() {
+  return (
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+      <header className="flex flex-wrap items-end justify-between gap-3 pb-1">
+        <div className="leading-tight">
+          <h1 className="text-xl font-semibold text-ink">
+            Good to see you, {seed.userName}
+          </h1>
+          <p className="pt-1 text-sm text-ink-muted">
+            Here is where every track stands, what is due, and what to do next.
+          </p>
+        </div>
+        <span
+          className="rounded-full border border-line bg-bg-raised px-3 py-1 text-[11px] text-ink-faint"
+          title="Everything below renders from lib/seed.ts until Supabase is wired in Phase 1"
+        >
+          Phase 0 · preview data
+        </span>
+      </header>
+
+      <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+        <ResumeCard resume={seed.resume} />
+        <ActivityChart days={seed.weeklyActivity} />
+      </div>
+
+      <MasteryGrid items={seed.trackMastery} />
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <TodayPlan items={seed.todayPlan} />
+        <DeadlineList items={seed.deadlines} />
+        <Recommendations items={seed.recommendations} />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <RecentScores items={seed.recentScores} />
+        <SystemHealth quotas={seed.quotaUsage} events={seed.systemEvents} />
+      </div>
+    </div>
+  );
+}
