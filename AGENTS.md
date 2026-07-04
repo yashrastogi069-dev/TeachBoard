@@ -95,8 +95,9 @@ GA4/GSC amber, default indigo. All components reference the variable.
 
 - **Phase 0 (current):** scaffold, dark theme tokens, app shell (sidebar, topbar,
   dashboard with seed data in `lib/seed.ts`, clearly marked as Phase 1 replacement).
-- **Phase 1:** Supabase schema + auth, one track end-to-end (SEO/GEO first):
-  curriculum generation, lesson player with 3 artifact types, streaming tutor.
+- **Phase 1:** Supabase schema + auth, TWO tracks end-to-end (SEO/GEO and
+  Digital Marketing, per Yash 2026-07-04): curriculum generation, lesson player
+  with 3 artifact types, streaming tutor.
 - **Phase 2:** assessments, rubric grading, remediation loop, attempts history.
 - **Phase 3:** dashboard metrics from real data, mastery, streaks, deadlines,
   recommendations.
@@ -104,6 +105,27 @@ GA4/GSC amber, default indigo. All components reference the variable.
   n8n workflows (enrichment, reminders, keep-alive).
 - **Phase 5:** remaining tracks + polish pass (frontend-design / animation skills),
   Vitest unit tests for artifact engine + Playwright smoke test.
+
+## Pipeline for adding a new course/track (no new code per course)
+
+Because content is generated and cached, a new course is data, not code:
+
+1. Add one row to `skill_tracks` (title, slug, accent, tagline). Until the
+   admin UI exists (Phase 5 "New track" button), this is one INSERT or one
+   entry in the seed list.
+2. Curriculum generator (`app/api/curriculum`) runs for that track:
+   researches current best practice via the research chain (cache → Tavily →
+   Serper → Exa → Jina), then generates the module list (Basic/Advanced/Pro),
+   lessons as artifact-block JSONB, assessments with rubrics. All stored in
+   Supabase. Costs a handful of free-tier AI calls, runs once.
+3. Enrichment fills `resource_cache` with fresh videos/articles (Phase 4:
+   n8n nightly job keeps them current).
+4. The track appears in the sidebar automatically; accent color comes from
+   the track row; dashboard picks it up with zero component changes.
+
+New ARTIFACT TYPES (a genuinely new interaction, e.g. a live spreadsheet sim)
+are the only thing that needs code: one new component in
+`components/artifacts/` + one schema entry. Adding COURSES never does.
 
 ## Database schema reference (implemented in Phase 1, `supabase/migrations/`)
 
