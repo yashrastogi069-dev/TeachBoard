@@ -1,4 +1,4 @@
-import { CalendarDays } from "lucide-react";
+import { CalendarBlank } from "@phosphor-icons/react/dist/ssr";
 import Panel from "@/components/ui/Panel";
 import { getTrack } from "@/lib/tracks";
 import type { Deadline } from "@/lib/seed";
@@ -47,7 +47,11 @@ export default function DeadlineList({ items }: { items: Deadline[] }) {
               data-accent={track?.accent}
               className="flex items-start gap-3 rounded-xl border border-line bg-bg/40 p-3"
             >
-              <CalendarDays className="mt-0.5 size-4 shrink-0 text-accent" />
+              <CalendarBlank
+                size={16}
+                weight="duotone"
+                className="mt-0.5 shrink-0 text-accent"
+              />
               <div className="min-w-0 flex-1 leading-tight">
                 <p className="text-xs text-ink">{d.title}</p>
                 <p className="pt-1 text-[11px] text-ink-faint">

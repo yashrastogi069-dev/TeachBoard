@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Sidebar from "@/components/shell/Sidebar";
 import Topbar from "@/components/shell/Topbar";
+import Copilot from "@/components/shell/Copilot";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
@@ -16,6 +17,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <Topbar />
         <main className="flex-1 px-6 py-6 lg:px-8 lg:py-8">{children}</main>
       </div>
+      <Copilot />
     </div>
   );
 }

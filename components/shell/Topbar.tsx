@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, Flame, Gauge } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { CaretDown, Fire, Gauge } from "@phosphor-icons/react";
 import { seed } from "@/lib/seed";
+
+const EASE: [number, number, number, number] = [0.23, 1, 0.32, 1];
 
 export default function Topbar() {
   const [statsOpen, setStatsOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
 
   useEffect(() => {
     if (!statsOpen) return;
@@ -23,7 +26,7 @@ export default function Topbar() {
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-line bg-bg/80 px-6 backdrop-blur">
       <div className="leading-tight">
-        <p className="text-sm font-semibold text-ink">Dashboard</p>
+        <p className="font-display text-sm font-semibold text-ink">Dashboard</p>
         <p className="text-[11px] text-ink-faint">All tracks, one view</p>
       </div>
 
@@ -32,31 +35,38 @@ export default function Topbar() {
           className="flex items-center gap-1.5 rounded-full border border-line bg-bg-raised px-3 py-1.5 text-xs text-ink-muted"
           title="Days in a row with learning activity"
         >
-          <Flame className="size-3.5 text-warning" />
-          <span className="font-medium text-ink">{seed.streakDays} day streak</span>
+          <Fire size={14} weight="duotone" className="text-warning" />
+          <span className="tabular font-medium text-ink">
+            {seed.streakDays} day streak
+          </span>
         </span>
 
         <div className="relative" ref={popoverRef}>
           <button
             type="button"
             onClick={() => setStatsOpen((v) => !v)}
-            className="flex items-center gap-1.5 rounded-full border border-line bg-bg-raised px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
+            className="flex items-center gap-1.5 rounded-full border border-line bg-bg-raised px-3 py-1.5 text-xs text-ink-muted transition-colors duration-150 hover:border-line-strong hover:text-ink active:scale-[0.97]"
           >
-            <Gauge className="size-3.5 text-accent" />
-            <span className="font-medium text-ink">{seed.overallMastery}% mastery</span>
-            <ChevronDown
-              className={`size-3.5 transition-transform ${statsOpen ? "rotate-180" : ""}`}
+            <Gauge size={14} weight="duotone" className="text-accent" />
+            <span className="tabular font-medium text-ink">
+              {seed.overallMastery}% mastery
+            </span>
+            <CaretDown
+              size={14}
+              className={`transition-transform duration-150 ${
+                statsOpen ? "rotate-180" : ""
+              }`}
             />
           </button>
 
           <AnimatePresence>
             {statsOpen && (
               <motion.div
-                initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                initial={reduce ? { opacity: 0 } : { opacity: 0, y: -6, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
-                className="absolute right-0 top-11 w-72 rounded-xl border border-line bg-bg-overlay p-4 shadow-2xl shadow-black/50"
+                exit={reduce ? { opacity: 0 } : { opacity: 0, y: -6, scale: 0.95 }}
+                transition={{ duration: 0.15, ease: EASE }}
+                className="absolute right-0 top-11 w-72 origin-top-right rounded-xl border border-line bg-bg-overlay p-4 shadow-2xl shadow-black/50"
               >
                 <p className="pb-3 text-[11px] font-medium uppercase tracking-widest text-ink-faint">
                   Mastery by track
@@ -66,13 +76,15 @@ export default function Topbar() {
                     <div key={track.slug} data-accent={track.accent}>
                       <div className="flex items-baseline justify-between pb-1">
                         <span className="text-xs text-ink-muted">{track.title}</span>
-                        <span className="text-xs font-medium text-ink">{mastery}%</span>
+                        <span className="tabular text-xs font-medium text-ink">
+                          {mastery}%
+                        </span>
                       </div>
                       <div className="h-1.5 overflow-hidden rounded-full bg-bg-raised">
                         <motion.div
-                          initial={{ width: 0 }}
+                          initial={reduce ? false : { width: 0 }}
                           animate={{ width: `${mastery}%` }}
-                          transition={{ duration: 0.6, ease: "easeOut" }}
+                          transition={{ duration: 0.5, ease: EASE }}
                           className="h-full rounded-full bg-accent"
                         />
                       </div>

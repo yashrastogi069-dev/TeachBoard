@@ -1,12 +1,19 @@
-import { BookOpen, CheckCircle2, Circle, ClipboardCheck, RefreshCw } from "lucide-react";
+import {
+  ArrowsClockwise,
+  BookOpen,
+  CheckCircle,
+  Circle,
+  Exam,
+} from "@phosphor-icons/react/dist/ssr";
+import type { Icon } from "@phosphor-icons/react";
 import Panel from "@/components/ui/Panel";
 import { getTrack } from "@/lib/tracks";
 import type { PlanItem, PlanKind } from "@/lib/seed";
 
-const KIND_ICON: Record<PlanKind, typeof BookOpen> = {
+const KIND_ICON: Record<PlanKind, Icon> = {
   lesson: BookOpen,
-  assessment: ClipboardCheck,
-  review: RefreshCw,
+  assessment: Exam,
+  review: ArrowsClockwise,
 };
 
 const KIND_LABEL: Record<PlanKind, string> = {
@@ -34,9 +41,13 @@ export default function TodayPlan({ items }: { items: PlanItem[] }) {
               className="flex items-start gap-3 rounded-xl border border-line bg-bg/40 p-3"
             >
               {item.done ? (
-                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+                <CheckCircle
+                  size={16}
+                  weight="fill"
+                  className="mt-0.5 shrink-0 text-success"
+                />
               ) : (
-                <Circle className="mt-0.5 size-4 shrink-0 text-ink-faint" />
+                <Circle size={16} className="mt-0.5 shrink-0 text-ink-faint" />
               )}
               <div className="min-w-0 leading-tight">
                 <p
@@ -49,7 +60,7 @@ export default function TodayPlan({ items }: { items: PlanItem[] }) {
                   {item.label}
                 </p>
                 <p className="flex items-center gap-1.5 pt-1 text-[11px] text-ink-faint">
-                  <KindIcon className="size-3 text-accent" />
+                  <KindIcon size={12} weight="duotone" className="text-accent" />
                   {KIND_LABEL[item.kind]} · {track?.title} · ~{item.estMinutes} min
                 </p>
               </div>

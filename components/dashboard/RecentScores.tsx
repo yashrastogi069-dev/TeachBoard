@@ -1,11 +1,15 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import Panel from "@/components/ui/Panel";
 import { getTrack } from "@/lib/tracks";
 import type { RecentScore } from "@/lib/seed";
 
+const EASE: [number, number, number, number] = [0.23, 1, 0.32, 1];
+
 export default function RecentScores({ items }: { items: RecentScore[] }) {
+  const reduce = useReducedMotion();
+
   return (
     <Panel
       title="Latest graded work"
@@ -21,7 +25,7 @@ export default function RecentScores({ items }: { items: RecentScore[] }) {
             <li key={s.id} data-accent={track?.accent} className="leading-tight">
               <div className="flex items-baseline justify-between gap-3 pb-1.5">
                 <p className="min-w-0 truncate text-xs text-ink">{s.assessment}</p>
-                <p className={`shrink-0 text-sm font-semibold ${tone}`}>
+                <p className={`tabular shrink-0 text-sm font-semibold ${tone}`}>
                   {s.score}
                   <span className="text-[11px] font-normal text-ink-faint">
                     /{s.maxScore}
@@ -30,9 +34,9 @@ export default function RecentScores({ items }: { items: RecentScore[] }) {
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-bg-overlay">
                 <motion.div
-                  initial={{ width: 0 }}
+                  initial={reduce ? false : { width: 0 }}
                   animate={{ width: `${pct}%` }}
-                  transition={{ duration: 0.7, ease: "easeOut", delay: 0.08 * i }}
+                  transition={{ duration: 0.6, ease: EASE, delay: 0.06 * i }}
                   className="h-full rounded-full bg-accent"
                 />
               </div>

@@ -15,7 +15,7 @@ export default function Panel({ title, subtitle, action, children, className }: 
     >
       <header className="flex items-start justify-between gap-3 pb-4">
         <div className="leading-tight">
-          <h2 className="text-sm font-semibold text-ink">{title}</h2>
+          <h2 className="font-display text-sm font-semibold text-ink">{title}</h2>
           {subtitle && <p className="pt-0.5 text-[11px] text-ink-faint">{subtitle}</p>}
         </div>
         {action}

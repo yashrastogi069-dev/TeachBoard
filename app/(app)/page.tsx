@@ -2,10 +2,14 @@ import { seed } from "@/lib/seed";
 import ResumeCard from "@/components/dashboard/ResumeCard";
 import MasteryGrid from "@/components/dashboard/MasteryGrid";
 import ActivityChart from "@/components/dashboard/ActivityChart";
+import SkillMap from "@/components/dashboard/SkillMap";
+import JobGoals from "@/components/dashboard/JobGoals";
 import TodayPlan from "@/components/dashboard/TodayPlan";
 import DeadlineList from "@/components/dashboard/DeadlineList";
 import Recommendations from "@/components/dashboard/Recommendations";
 import RecentScores from "@/components/dashboard/RecentScores";
+import Certifications from "@/components/dashboard/Certifications";
+import InsightsFeed from "@/components/dashboard/InsightsFeed";
 import SystemHealth from "@/components/dashboard/SystemHealth";
 
 export default function DashboardPage() {
@@ -13,7 +17,7 @@ export default function DashboardPage() {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
       <header className="flex flex-wrap items-end justify-between gap-3 pb-1">
         <div className="leading-tight">
-          <h1 className="text-xl font-semibold text-ink">
+          <h1 className="font-display text-xl font-semibold text-ink">
             Good to see you, {seed.userName}
           </h1>
           <p className="pt-1 text-sm text-ink-muted">
@@ -33,6 +37,11 @@ export default function DashboardPage() {
         <ActivityChart days={seed.weeklyActivity} />
       </div>
 
+      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+        <SkillMap map={seed.skillMap} />
+        <JobGoals goals={seed.jobGoals} />
+      </div>
+
       <MasteryGrid items={seed.trackMastery} />
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -41,10 +50,18 @@ export default function DashboardPage() {
         <Recommendations items={seed.recommendations} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-3">
         <RecentScores items={seed.recentScores} />
-        <SystemHealth quotas={seed.quotaUsage} events={seed.systemEvents} />
+        <Certifications items={seed.certifications} />
+        <InsightsFeed items={seed.insights} />
       </div>
+
+      <SystemHealth
+        quotas={seed.quotaUsage}
+        events={seed.systemEvents}
+        aiUsage={seed.aiUsage}
+        dataSources={seed.dataSources}
+      />
     </div>
   );
 }

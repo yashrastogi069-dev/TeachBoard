@@ -81,6 +81,57 @@ export interface ResumePoint {
   progressPct: number;
 }
 
+export type SkillNodeStatus = "done" | "current" | "next" | "locked";
+
+export interface SkillNode {
+  id: string;
+  title: string;
+  status: SkillNodeStatus;
+  progressPct: number; // 0..100 within this module
+  levelLabel: string; // e.g. "Basic", "Advanced", "Pro"
+}
+
+export interface SkillMap {
+  trackSlug: string;
+  nodes: SkillNode[];
+}
+
+export interface JobGoal {
+  id: string;
+  role: string;
+  readiness: number; // 0..100, weighted from linked track mastery
+  linkedTrackSlugs: string[];
+}
+
+export interface AiUsage {
+  callsToday: number;
+  tokensToday: number;
+  estCostUsd: number; // stays 0.00 while on free tiers, tracked anyway
+}
+
+export interface InsightItem {
+  id: string;
+  source: string;
+  title: string;
+  ageLabel: string;
+  trackSlug: string;
+}
+
+export interface Certification {
+  id: string;
+  name: string;
+  provider: string;
+  status: "in_progress" | "planned";
+  progressPct: number;
+}
+
+export interface DataSource {
+  id: string;
+  name: string;
+  detail: string;
+  status: "connected" | "pending";
+}
+
 function track(slug: string): Track {
   const found = TRACKS.find((t) => t.slug === slug);
   if (!found) throw new Error(`Unknown track slug in seed data: ${slug}`);
@@ -98,6 +149,101 @@ export const seed = {
     lessonTitle: "Crawling, rendering and indexing, step by step",
     progressPct: 60,
   } satisfies ResumePoint,
+
+  skillMap: {
+    trackSlug: "seo-geo",
+    nodes: [
+      { id: "sm-1", title: "Search fundamentals", status: "done", progressPct: 100, levelLabel: "Basic" },
+      { id: "sm-2", title: "Keyword & intent research", status: "done", progressPct: 100, levelLabel: "Basic" },
+      { id: "sm-3", title: "Technical SEO foundations", status: "current", progressPct: 60, levelLabel: "Advanced" },
+      { id: "sm-4", title: "Structured data & rich results", status: "next", progressPct: 0, levelLabel: "Advanced" },
+      { id: "sm-5", title: "GEO: ranking in AI answers", status: "locked", progressPct: 0, levelLabel: "Pro" },
+      { id: "sm-6", title: "Full site audit capstone", status: "locked", progressPct: 0, levelLabel: "Pro" },
+    ],
+  } satisfies SkillMap,
+
+  jobGoals: [
+    {
+      id: "jg-1",
+      role: "SEO / Content Analyst",
+      readiness: 38,
+      linkedTrackSlugs: ["seo-geo", "analytics"],
+    },
+    {
+      id: "jg-2",
+      role: "Digital Marketing Coordinator",
+      readiness: 27,
+      linkedTrackSlugs: ["digital-marketing", "analytics", "seo-geo"],
+    },
+    {
+      id: "jg-3",
+      role: "Marketing Automation Associate",
+      readiness: 18,
+      linkedTrackSlugs: ["ai-automation", "digital-marketing"],
+    },
+  ] satisfies JobGoal[],
+
+  aiUsage: {
+    callsToday: 62,
+    tokensToday: 48200,
+    estCostUsd: 0,
+  } satisfies AiUsage,
+
+  insights: [
+    {
+      id: "ins-1",
+      source: "Search Engine Land",
+      title: "Google's June core update: what changed for small sites",
+      ageLabel: "2h ago",
+      trackSlug: "seo-geo",
+    },
+    {
+      id: "ins-2",
+      source: "Google Blog",
+      title: "GA4 adds cross-channel budgeting reports",
+      ageLabel: "1d ago",
+      trackSlug: "analytics",
+    },
+    {
+      id: "ins-3",
+      source: "Marketing Week",
+      title: "Paid social benchmarks for NZ retail, H1 2026",
+      ageLabel: "2d ago",
+      trackSlug: "digital-marketing",
+    },
+  ] satisfies InsightItem[],
+
+  certifications: [
+    {
+      id: "cert-1",
+      name: "Google Analytics 4 Certification",
+      provider: "Google Skillshop",
+      status: "in_progress",
+      progressPct: 45,
+    },
+    {
+      id: "cert-2",
+      name: "Google Ads Search Certification",
+      provider: "Google Skillshop",
+      status: "planned",
+      progressPct: 0,
+    },
+    {
+      id: "cert-3",
+      name: "HubSpot Inbound Marketing",
+      provider: "HubSpot Academy",
+      status: "planned",
+      progressPct: 0,
+    },
+  ] satisfies Certification[],
+
+  dataSources: [
+    { id: "ds-1", name: "Supabase", detail: "database + auth", status: "pending" },
+    { id: "ds-2", name: "Gemini API", detail: "tutor + grading", status: "pending" },
+    { id: "ds-3", name: "Tavily", detail: "research chain", status: "connected" },
+    { id: "ds-4", name: "YouTube API", detail: "lesson videos", status: "pending" },
+    { id: "ds-5", name: "ntfy push", detail: "error alerts", status: "pending" },
+  ] satisfies DataSource[],
 
   trackMastery: [
     { track: track("seo-geo"), mastery: 42, modulesDone: 3, modulesTotal: 8 },

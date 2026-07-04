@@ -1,6 +1,22 @@
 # RUN_STATE — Praxis build progress
 
-Last updated: 2026-07-04 (session: initial Phase 0 build)
+Last updated: 2026-07-04 (session: initial Phase 0 build + full dashboard pass)
+
+## Phase 0.5 — full dashboard + design-skill polish: COMPLETE
+
+- [x] Design skills invoked and adopted as standing policy (see AGENTS.md 8d)
+- [x] Phosphor icons replace lucide everywhere; lucide uninstalled
+- [x] Reduced-motion support in every animated component
+- [x] Custom easing + sub-300ms entrances + stagger; focus-visible rings;
+      tabular figures; Space Grotesk display font
+- [x] Skill Progress Map (connected glowing node path, per Yash's reference)
+- [x] Skill Goals · Job Roles panel (readiness weighted from linked tracks)
+- [x] Learning activity re-built as smooth glowing area chart
+- [x] Certifications + Expert Insights Feed panels (sample data, honest labels)
+- [x] System Health: 3-column layout with AI cost row + Data sources statuses
+- [x] Floating Professor copilot shell (honest offline state until Phase 1)
+- [x] Build clean; all 10 panel markers verified in served HTML
+- [x] Pushed to https://github.com/yashrastogi069-dev/TeachBoard
 
 ## Current phase: Phase 0 — COMPLETE (pending Yash's visual review)
 

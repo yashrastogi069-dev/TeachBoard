@@ -39,6 +39,23 @@ a progress dashboard. Top-class teaching quality and UI/UX are the #1 priority.
    quiz, scenario, video). Test blocks (quiz, card-sort, scenario, checkpoint)
    are auto-scored in the browser and synced to the DB.
 8. **Deployment:** local dev first; deploy to Vercel Hobby when Phase 1 works.
+   Remote: https://github.com/yashrastogi069-dev/TeachBoard (created by Yash
+   2026-07-04). Push work as it lands; never force-push.
+8b. **Copilot tutor:** floating button + slide-over panel mounted in the app
+   shell (`components/shell/Copilot.tsx`), reachable from every page. Shell
+   shipped in Phase 0 with an honest offline state; Phase 1 connects the
+   streaming tutor API and makes it context-aware (knows the lesson or
+   assessment on screen).
+8c. **AI cost tracking:** `api_usage` logs tokens_in, tokens_out, and
+   est_cost_usd per call. Token logging happens in the Next.js routes where
+   the AI calls are made (NOT in n8n); n8n logs only its own background jobs
+   into the same table. System Health shows today's calls, tokens, and cost.
+8d. **Design skills are standing policy:** frontend-design, emilkowal-animations,
+   ui-ux-pro-max, and design-taste-frontend rules apply to all UI work:
+   Phosphor icons only (no lucide, no emoji icons), reduced-motion support on
+   every animation, custom ease cubic-bezier(0.23,1,0.32,1), entrances under
+   300ms with 40ms stagger, focus-visible rings, tabular figures for metrics,
+   glow reserved for a few key elements, Space Grotesk for display type.
 9. **Failure visibility (mandatory for every feature):** every caught failure in
    API routes, grading, curriculum generation, or n8n jobs is (a) written to the
    `system_events` table with the exact error message, source, and timestamp,
@@ -131,8 +148,11 @@ are the only thing that needs code: one new component in
 
 skill_tracks, modules, lessons, assessments, submissions, progress, deadlines,
 activity_log, tutor_sessions, tutor_messages, recommendations, resource_cache,
-api_usage, system_events (error/alert log feeding the System Health panel and
-ntfy pushes). Column detail lives in the migration files once created.
+api_usage (with tokens_in/tokens_out/est_cost_usd), system_events (error/alert
+log feeding the System Health panel and ntfy pushes), job_goals (target job
+roles with track weights, feeds the Skill Goals panel), certifications
+(external cert tracking). Insights feed reads from resource_cache. Column
+detail lives in the migration files once created.
 
 ## Checkpointing
 
