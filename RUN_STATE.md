@@ -22,8 +22,9 @@ Last updated: 2026-07-04 (session: initial Phase 0 build)
 
 1. Yash runs `npm run dev` in Desktop/praxis and reviews the dashboard look.
 2. Supabase schema migration + auth wiring.
-3. SEO/GEO track end-to-end: curriculum generation, lesson player with first
-   3 artifact types (flowchart, quiz, card-sort), streaming Socratic tutor.
+3. SEO/GEO and Digital Marketing tracks end-to-end: curriculum generation,
+   lesson player with first 3 artifact types (flowchart, quiz, card-sort),
+   streaming Socratic tutor.
 4. lib/notify.ts (ntfy push helper) + system_events writes from all API routes.
 
 ## Waiting on Yash (needed for Phase 1, not Phase 0)
@@ -36,6 +37,6 @@ Last updated: 2026-07-04 (session: initial Phase 0 build)
 ## Notes
 
 - n8n is installed locally on Yash's machine; used from Phase 4 only.
-- First track to build end-to-end in Phase 1: SEO/GEO.
+- Phase 1 tracks (per Yash 2026-07-04): SEO/GEO and Digital Marketing.
 - Background-session edit guard: work in a git worktree (EnterWorktree) for
   code changes; merge back with --ff-only when verified.
