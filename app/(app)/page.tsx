@@ -1,4 +1,5 @@
-import { seed } from "@/lib/seed";
+import { supabaseServer } from "@/lib/supabase/server";
+import { getDashboardData } from "@/lib/dashboard";
 import ResumeCard from "@/components/dashboard/ResumeCard";
 import MasteryGrid from "@/components/dashboard/MasteryGrid";
 import ActivityChart from "@/components/dashboard/ActivityChart";
@@ -12,56 +13,59 @@ import Certifications from "@/components/dashboard/Certifications";
 import InsightsFeed from "@/components/dashboard/InsightsFeed";
 import SystemHealth from "@/components/dashboard/SystemHealth";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const supabase = await supabaseServer();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null; // proxy redirects unauthenticated visits to /login
+
+  const data = await getDashboardData(supabase, user);
+  const firstName = (user.email ?? "there").split("@")[0];
+
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
       <header className="flex flex-wrap items-end justify-between gap-3 pb-1">
         <div className="leading-tight">
           <h1 className="font-display text-xl font-semibold text-ink">
-            Good to see you, {seed.userName}
+            Good to see you, {firstName.charAt(0).toUpperCase() + firstName.slice(1)}
           </h1>
           <p className="pt-1 text-sm text-ink-muted">
             Here is where every track stands, what is due, and what to do next.
           </p>
         </div>
-        <span
-          className="rounded-full border border-line bg-bg-raised px-3 py-1 text-[11px] text-ink-faint"
-          title="Everything below renders from lib/seed.ts until Supabase is wired in Phase 1"
-        >
-          Phase 0 · preview data
-        </span>
       </header>
 
       <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-        <ResumeCard resume={seed.resume} />
-        <ActivityChart days={seed.weeklyActivity} />
+        <ResumeCard resume={data.resume} startHref={data.startHref} />
+        <ActivityChart days={data.weeklyActivity} />
       </div>
 
-      <SkillMap map={seed.skillMap} />
+      {data.skillMap && <SkillMap map={data.skillMap} />}
 
-      <MasteryGrid items={seed.trackMastery} />
+      <MasteryGrid items={data.trackMastery} />
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <TodayPlan items={seed.todayPlan} />
-        <DeadlineList items={seed.deadlines} />
-        <Recommendations items={seed.recommendations} />
+        <TodayPlan items={data.todayPlan} />
+        <DeadlineList items={data.deadlines} />
+        <Recommendations items={data.recommendations} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <JobGoals goals={seed.jobGoals} />
-        <RecentScores items={seed.recentScores} />
+        <JobGoals goals={data.jobGoals} />
+        <RecentScores items={data.recentScores} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Certifications items={seed.certifications} />
-        <InsightsFeed items={seed.insights} />
+        <Certifications items={data.certifications} />
+        <InsightsFeed items={data.insights} />
       </div>
 
       <SystemHealth
-        quotas={seed.quotaUsage}
-        events={seed.systemEvents}
-        aiUsage={seed.aiUsage}
-        dataSources={seed.dataSources}
+        quotas={data.quotaUsage}
+        events={data.systemEvents}
+        aiUsage={data.aiUsage}
+        dataSources={data.dataSources}
       />
     </div>
   );

@@ -13,8 +13,8 @@ import { TRACKS } from "@/lib/tracks";
 
 const NAV = [
   { href: "/", label: "Dashboard", icon: SquaresFour, ready: true },
-  { href: "/progress", label: "Progress", icon: ChartLine, ready: false },
-  { href: "/settings", label: "Settings", icon: GearSix, ready: false },
+  { href: "/progress", label: "Progress", icon: ChartLine, ready: true },
+  { href: "/settings", label: "Settings", icon: GearSix, ready: true },
 ];
 
 export default function Sidebar() {
@@ -76,28 +76,49 @@ export default function Sidebar() {
           Skill tracks
         </p>
         <div className="flex flex-col gap-1">
-          {TRACKS.map((t) => (
-            <span
-              key={t.slug}
-              data-accent={t.accent}
-              className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink-muted"
-              title={`${t.tagline}. Opens in Phase 1.`}
-            >
-              <span
-                className="size-2 rounded-full bg-accent"
-                style={{ boxShadow: "0 0 8px 0 var(--accent-glow)" }}
-              />
-              <span className="truncate">{t.title}</span>
-              <span className="ml-auto shrink-0 whitespace-nowrap rounded-md border border-line px-1.5 py-0.5 text-[10px] text-ink-faint">
-                Phase 1
-              </span>
-            </span>
-          ))}
+          {TRACKS.map((t) => {
+            if (!t.active) {
+              return (
+                <span
+                  key={t.slug}
+                  data-accent={t.accent}
+                  className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink-faint"
+                  title={`${t.tagline}. This course opens after the first two are complete.`}
+                >
+                  <span className="size-2 rounded-full bg-accent opacity-50" />
+                  <span className="truncate">{t.title}</span>
+                  <span className="ml-auto shrink-0 whitespace-nowrap rounded-md border border-line px-1.5 py-0.5 text-[10px] text-ink-faint">
+                    Soon
+                  </span>
+                </span>
+              );
+            }
+            const active = pathname.startsWith(`/tracks/${t.slug}`);
+            return (
+              <Link
+                key={t.slug}
+                href={`/tracks/${t.slug}`}
+                data-accent={t.accent}
+                title={t.tagline}
+                className={
+                  active
+                    ? "flex items-center gap-3 rounded-lg bg-accent-soft px-3 py-2 text-sm font-medium text-accent-bright"
+                    : "flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink-muted transition-colors hover:bg-bg-overlay hover:text-ink"
+                }
+              >
+                <span
+                  className="size-2 rounded-full bg-accent"
+                  style={{ boxShadow: "0 0 8px 0 var(--accent-glow)" }}
+                />
+                <span className="truncate">{t.title}</span>
+              </Link>
+            );
+          })}
         </div>
       </div>
 
       <p className="mt-auto px-6 py-4 text-[11px] text-ink-faint">
-        Phase 0 preview build
+        Praxis · learning that ships
       </p>
     </aside>
   );

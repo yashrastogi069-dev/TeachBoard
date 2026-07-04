@@ -15,6 +15,12 @@ export default function RecentScores({ items }: { items: RecentScore[] }) {
       title="Latest graded work"
       subtitle="Strict rubric scores. Anything under 70 gets a remediation plan."
     >
+      {items.length === 0 && (
+        <p className="rounded-xl border border-line bg-bg/40 p-4 text-xs leading-relaxed text-ink-faint">
+          No graded work yet. Your first practical test result lands here with
+          its full rubric breakdown.
+        </p>
+      )}
       <ul className="flex flex-col gap-3">
         {items.map((s, i) => {
           const track = getTrack(s.trackSlug);

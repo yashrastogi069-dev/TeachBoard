@@ -20,6 +20,12 @@ export default function Recommendations({ items }: { items: Recommendation[] }) 
       title="Professor's recommendations"
       subtitle="Generated from your rubric gaps and pace, refreshed after every graded test."
     >
+      {items.length === 0 && (
+        <p className="rounded-xl border border-line bg-bg/40 p-4 text-xs leading-relaxed text-ink-faint">
+          The Professor recommends things after grading your work. Take a
+          practical test and this fills up.
+        </p>
+      )}
       <ul className="flex flex-col gap-2">
         {items.map((rec) => {
           const track = getTrack(rec.trackSlug);

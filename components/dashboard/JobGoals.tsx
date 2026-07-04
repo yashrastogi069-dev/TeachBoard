@@ -15,6 +15,11 @@ export default function JobGoals({ goals }: { goals: JobGoal[] }) {
       title="Skill goals · job roles"
       subtitle="Readiness for the roles you are targeting, weighted from linked track mastery."
     >
+      {goals.length === 0 && (
+        <p className="rounded-xl border border-line bg-bg/40 p-4 text-xs leading-relaxed text-ink-faint">
+          Job goals appear once the database is connected.
+        </p>
+      )}
       <ul className="flex flex-col gap-4">
         {goals.map((goal, i) => (
           <li key={goal.id} className="leading-tight">

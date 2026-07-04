@@ -1,16 +1,42 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { CaretDown, Fire, Gauge } from "@phosphor-icons/react";
-import { seed } from "@/lib/seed";
+import type { TrackMastery } from "@/lib/seed";
+import { getTrack } from "@/lib/tracks";
 
 const EASE: [number, number, number, number] = [0.23, 1, 0.32, 1];
 
-export default function Topbar() {
+export interface TopStats {
+  streakDays: number;
+  overallMastery: number;
+  trackMastery: Array<{ trackSlug: string; mastery: number }>;
+}
+
+function titleFor(pathname: string): { title: string; subtitle: string } {
+  if (pathname === "/") return { title: "Dashboard", subtitle: "All tracks, one view" };
+  if (pathname.startsWith("/tracks/")) {
+    const slug = pathname.split("/")[2];
+    const track = getTrack(slug);
+    return {
+      title: track?.title ?? "Track",
+      subtitle: pathname.split("/").length > 3 ? "Learning" : "Module path",
+    };
+  }
+  if (pathname.startsWith("/assess")) return { title: "Practical test", subtitle: "Graded on a strict rubric" };
+  if (pathname.startsWith("/progress")) return { title: "Progress", subtitle: "The long view" };
+  if (pathname.startsWith("/settings")) return { title: "Settings", subtitle: "Praxis setup" };
+  return { title: "Praxis", subtitle: "" };
+}
+
+export default function Topbar({ stats }: { stats: TopStats }) {
   const [statsOpen, setStatsOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
+  const pathname = usePathname();
+  const heading = titleFor(pathname);
 
   useEffect(() => {
     if (!statsOpen) return;
@@ -23,11 +49,18 @@ export default function Topbar() {
     return () => window.removeEventListener("pointerdown", onPointerDown);
   }, [statsOpen]);
 
+  const trackMasteryFull: TrackMastery[] = stats.trackMastery.flatMap((tm) => {
+    const track = getTrack(tm.trackSlug);
+    return track ? [{ track, mastery: tm.mastery, modulesDone: 0, modulesTotal: 0 }] : [];
+  });
+
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-line bg-bg/80 px-6 backdrop-blur">
       <div className="leading-tight">
-        <p className="font-display text-sm font-semibold text-ink">Dashboard</p>
-        <p className="text-[11px] text-ink-faint">All tracks, one view</p>
+        <p className="font-display text-sm font-semibold text-ink">{heading.title}</p>
+        {heading.subtitle && (
+          <p className="text-[11px] text-ink-faint">{heading.subtitle}</p>
+        )}
       </div>
 
       <div className="ml-auto flex items-center gap-2">
@@ -37,7 +70,7 @@ export default function Topbar() {
         >
           <Fire size={14} weight="duotone" className="text-warning" />
           <span className="tabular font-medium text-ink">
-            {seed.streakDays} day streak
+            {stats.streakDays} day streak
           </span>
         </span>
 
@@ -49,13 +82,11 @@ export default function Topbar() {
           >
             <Gauge size={14} weight="duotone" className="text-accent" />
             <span className="tabular font-medium text-ink">
-              {seed.overallMastery}% mastery
+              {stats.overallMastery}% mastery
             </span>
             <CaretDown
               size={14}
-              className={`transition-transform duration-150 ${
-                statsOpen ? "rotate-180" : ""
-              }`}
+              className={`transition-transform duration-150 ${statsOpen ? "rotate-180" : ""}`}
             />
           </button>
 
@@ -72,7 +103,7 @@ export default function Topbar() {
                   Mastery by track
                 </p>
                 <div className="flex flex-col gap-3">
-                  {seed.trackMastery.map(({ track, mastery }) => (
+                  {trackMasteryFull.map(({ track, mastery }) => (
                     <div key={track.slug} data-accent={track.accent}>
                       <div className="flex items-baseline justify-between pb-1">
                         <span className="text-xs text-ink-muted">{track.title}</span>

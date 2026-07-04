@@ -38,6 +38,11 @@ export default function DeadlineList({ items }: { items: Deadline[] }) {
       title="Deadlines"
       subtitle="Missed ones trigger an ntfy push and a rescue plan."
     >
+      {items.length === 0 && (
+        <p className="rounded-xl border border-line bg-bg/40 p-4 text-xs leading-relaxed text-ink-faint">
+          No deadlines yet. Starting a module sets one automatically, one week out.
+        </p>
+      )}
       <ul className="flex flex-col gap-2">
         {items.map((d) => {
           const track = getTrack(d.trackSlug);

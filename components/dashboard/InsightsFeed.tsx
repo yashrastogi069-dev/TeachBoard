@@ -7,8 +7,14 @@ export default function InsightsFeed({ items }: { items: InsightItem[] }) {
   return (
     <Panel
       title="Expert insights feed"
-      subtitle="Fresh industry news matched to your tracks. Sample items until the research chain goes live in Phase 4."
+      subtitle="Fresh industry news matched to your tracks, refreshed by the nightly research run."
     >
+      {items.length === 0 && (
+        <p className="rounded-xl border border-line bg-bg/40 p-4 text-xs leading-relaxed text-ink-faint">
+          No news pulled yet. The nightly n8n refresh (or hitting the refresh
+          cron route once) fills this feed.
+        </p>
+      )}
       <ul className="flex flex-col gap-2">
         {items.map((item) => {
           const track = getTrack(item.trackSlug);

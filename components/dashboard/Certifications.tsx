@@ -15,6 +15,11 @@ export default function Certifications({ items }: { items: Certification[] }) {
       title="Certifications"
       subtitle="External certificates your tracks prepare you for. Earned badges will appear here."
     >
+      {items.length === 0 && (
+        <p className="rounded-xl border border-line bg-bg/40 p-4 text-xs leading-relaxed text-ink-faint">
+          All planned certifications are earned, or none are set up yet.
+        </p>
+      )}
       <ul className="flex flex-col gap-2">
         {items.map((cert, i) => (
           <li

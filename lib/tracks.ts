@@ -13,6 +13,7 @@ export interface Track {
   title: string;
   tagline: string;
   accent: TrackAccent;
+  active: boolean; // active tracks have generated courses; others come later
 }
 
 export const TRACKS: Track[] = [
@@ -21,30 +22,35 @@ export const TRACKS: Track[] = [
     title: "SEO / GEO",
     tagline: "Rank in search engines and AI answer engines",
     accent: "seo",
+    active: true,
   },
   {
     slug: "digital-marketing",
     title: "Digital Marketing",
     tagline: "Campaigns, funnels, paid and organic growth",
     accent: "marketing",
+    active: true,
   },
   {
     slug: "analytics",
     title: "GA4 & Search Console",
     tagline: "Measure, audit and report like an analyst",
     accent: "analytics",
+    active: false,
   },
   {
     slug: "ai-automation",
     title: "AI Automation",
     tagline: "Agents, workflows and n8n in real businesses",
     accent: "ai",
+    active: false,
   },
   {
     slug: "finance",
     title: "Finance",
     tagline: "Read numbers, build budgets, defend decisions",
     accent: "finance",
+    active: false,
   },
 ];
 

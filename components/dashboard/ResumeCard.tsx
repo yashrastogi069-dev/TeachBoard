@@ -1,15 +1,22 @@
 "use client";
 
+import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
-import { PlayCircle } from "@phosphor-icons/react";
+import { PlayCircle, RocketLaunch } from "@phosphor-icons/react";
 import { getTrack } from "@/lib/tracks";
 import type { ResumePoint } from "@/lib/seed";
 
 const EASE: [number, number, number, number] = [0.23, 1, 0.32, 1];
 
-export default function ResumeCard({ resume }: { resume: ResumePoint }) {
+export default function ResumeCard({
+  resume,
+  startHref,
+}: {
+  resume: ResumePoint | null;
+  startHref: string;
+}) {
   const reduce = useReducedMotion();
-  const track = getTrack(resume.trackSlug);
+  const track = resume ? getTrack(resume.trackSlug) : null;
 
   return (
     <motion.div
@@ -24,35 +31,59 @@ export default function ResumeCard({ resume }: { resume: ResumePoint }) {
         className="pointer-events-none absolute -right-20 -top-20 size-56 rounded-full opacity-30 blur-3xl"
         style={{ background: "var(--accent-glow)" }}
       />
-      <p className="text-[11px] font-medium uppercase tracking-widest text-ink-faint">
-        Continue where you left off
-      </p>
-      <p className="pt-2 text-xs text-accent-bright">{track?.title}</p>
-      <h3 className="font-display pt-1 text-lg font-semibold text-ink">
-        {resume.lessonTitle}
-      </h3>
-      <p className="pt-0.5 text-xs text-ink-muted">Module: {resume.moduleTitle}</p>
+      {resume ? (
+        <>
+          <p className="text-[11px] font-medium uppercase tracking-widest text-ink-faint">
+            Continue where you left off
+          </p>
+          <p className="pt-2 text-xs text-accent-bright">{track?.title}</p>
+          <h3 className="font-display pt-1 text-lg font-semibold text-ink">
+            {resume.lessonTitle}
+          </h3>
+          <p className="pt-0.5 text-xs text-ink-muted">Module: {resume.moduleTitle}</p>
 
-      <div className="flex items-center gap-4 pt-4">
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-bg-overlay">
-          <motion.div
-            initial={reduce ? false : { width: 0 }}
-            animate={{ width: `${resume.progressPct}%` }}
-            transition={{ duration: 0.6, ease: EASE, delay: 0.15 }}
-            className="h-full rounded-full bg-accent"
-          />
-        </div>
-        <span className="tabular text-xs text-ink-muted">
-          {resume.progressPct}%
-        </span>
-        <span
-          className="flex cursor-not-allowed items-center gap-1.5 rounded-lg bg-accent-soft px-3 py-2 text-xs font-medium text-accent-bright"
-          title="The lesson player is built in Phase 1"
-        >
-          <PlayCircle size={16} weight="duotone" />
-          Resume lesson
-        </span>
-      </div>
+          <div className="flex items-center gap-4 pt-4">
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-bg-overlay">
+              <motion.div
+                initial={reduce ? false : { width: 0 }}
+                animate={{ width: `${resume.progressPct}%` }}
+                transition={{ duration: 0.6, ease: EASE, delay: 0.15 }}
+                className="h-full rounded-full bg-accent"
+              />
+            </div>
+            <span className="tabular text-xs text-ink-muted">{resume.progressPct}%</span>
+            <Link
+              href={resume.href}
+              className="flex items-center gap-1.5 rounded-lg bg-accent-soft px-3 py-2 text-xs font-medium text-accent-bright transition-transform duration-150 hover:brightness-110 active:scale-[0.97]"
+            >
+              <PlayCircle size={16} weight="duotone" />
+              Resume lesson
+            </Link>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="text-[11px] font-medium uppercase tracking-widest text-ink-faint">
+            Start here
+          </p>
+          <h3 className="font-display pt-2 text-lg font-semibold text-ink">
+            Your first course is ready to build
+          </h3>
+          <p className="pt-1 text-xs text-ink-muted">
+            Open a track and the professor will design your module path, then
+            your progress starts showing up all over this dashboard.
+          </p>
+          <div className="pt-4">
+            <Link
+              href={startHref}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-accent-soft px-4 py-2 text-xs font-medium text-accent-bright transition-transform duration-150 hover:brightness-110 active:scale-[0.97]"
+            >
+              <RocketLaunch size={16} weight="duotone" />
+              Open your first track
+            </Link>
+          </div>
+        </>
+      )}
     </motion.div>
   );
 }

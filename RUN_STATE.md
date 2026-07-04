@@ -1,58 +1,78 @@
 # RUN_STATE — Praxis build progress
 
-Last updated: 2026-07-04 (session: initial Phase 0 build + full dashboard pass)
+Last updated: 2026-07-04, FULL BUILD SHIPPED (phases 0 through 5 complete).
+Read CLAUDE.md -> AGENTS.md (rules/architecture), DESIGN.md (design system),
+MEMORY.md (session gotchas) before touching anything.
 
-## Phase 0.5 — full dashboard + design-skill polish: COMPLETE
+## WHERE WORK HAPPENS (critical for any resuming session)
 
-- [x] Design skills invoked and adopted as standing policy (see AGENTS.md 8d)
-- [x] Phosphor icons replace lucide everywhere; lucide uninstalled
-- [x] Reduced-motion support in every animated component
-- [x] Custom easing + sub-300ms entrances + stagger; focus-visible rings;
-      tabular figures; Space Grotesk display font
-- [x] Skill Progress Map (connected glowing node path, per Yash's reference)
-- [x] Skill Goals · Job Roles panel (readiness weighted from linked tracks)
-- [x] Learning activity re-built as smooth glowing area chart
-- [x] Certifications + Expert Insights Feed panels (sample data, honest labels)
-- [x] System Health: 3-column layout with AI cost row + Data sources statuses
-- [x] Floating Professor copilot shell (honest offline state until Phase 1)
-- [x] Build clean; all 10 panel markers verified in served HTML
-- [x] Pushed to https://github.com/yashrastogi069-dev/TeachBoard
+- Repo: C:\Users\win 10\Desktop\praxis, remote github.com/yashrastogi069-dev/TeachBoard (branch master).
+- Active work: git worktree `.claude/worktrees/praxis-build`, branch `worktree-praxis-build`.
+  Ship flow: commit in worktree -> `git -C <main> merge --ff-only worktree-praxis-build`
+  -> `git -C <main> push origin master` -> keep worktree for continued work.
+- `.env.local` exists in main checkout AND build worktree (12 keys incl.
+  CRON_SECRET + NTFY_TOPIC=yash-TeachBoard). NEVER print values. No YouTube
+  key, no Groq key.
+- Build/verify: `npm run build`, `npm test` inside the worktree.
+  A dev server may already be running for this worktree (check port 3001);
+  Yash may run his own on 3000. Use 3177+ for new test servers.
 
-## Current phase: Phase 0 — COMPLETE (pending Yash's visual review)
+## STATUS: ALL PHASES COMPLETE (2026-07-04)
 
-- [x] Blueprint agreed with Yash (see AGENTS.md for locked decisions)
-- [x] create-next-app scaffold created at Desktop/praxis (TS, Tailwind, App Router, no src dir)
-- [x] AGENTS.md blueprint written (incl. ntfy alerts, System Health panel, free-tier failsafes)
-- [x] npm install (base deps + motion + lucide-react)
-- [x] Read node_modules/next/dist/docs/ (Next 16: async params, PageProps helpers; nothing breaking for Phase 0)
-- [x] Dark theme tokens + per-track accent variables in globals.css (data-accent switching)
-- [x] App shell: sidebar (track switcher + nav), topbar (streak chip + global stats popover)
-- [x] L0 dashboard page with seed data from lib/seed.ts (replaced by DB in Phases 1-3):
-      resume card, mastery rings, activity chart, today plan, deadlines,
-      recommendations, recent scores, system health (quotas + exact error log)
-- [x] npm run build passes clean (Next 16.2.10, Turbopack)
-- [x] turbopack.root pinned in next.config.ts (stray lockfile in user home dir)
-- [x] git commit Phase 0 on master (6fbe669) + polish commit
+- Phase 0: dark shell, tokens, dashboard preview. DONE (commits 6fbe669..c02d802).
+- Phase 1a: Supabase schema APPLIED in Yash's project (16 tables + RLS + seed:
+  5 tracks, 3 job_goals, 3 certifications verified live). Auth works; Yash's
+  account exists (yashrastogi069@gmail.com). lib/supabase/*, proxy.ts login
+  gate, lib/notify.ts, lib/ai/provider.ts (gemini->openrouter->nvidia),
+  lib/apis/research.ts (cache->tavily->serper->jina). DONE.
+- Phase 1b: lib/blocks.ts (11 block schemas + scoring), lib/curriculum.ts,
+  routes /api/curriculum /api/lesson /api/progress /api/tutor,
+  components/artifacts (Markdown, SimpleBlocks, InteractiveBlocks,
+  ArtifactRenderer), TutorContext + streaming Copilot, track/module/lesson
+  pages + LessonPlayer. DONE and verified live.
+- Phase 2: /api/grade (strict rubric grading), /assess/[id] +
+  AssessmentWorkspace (submit, per-criterion results, retry, attempts). DONE.
+- Phase 3: lib/dashboard.ts (all panels live, fail-soft), live dashboard page,
+  progress page, settings page (+ sign out), empty states everywhere,
+  seed.ts stripped to types. DONE.
+- Phase 4: /api/cron/keepalive + /api/cron/refresh (per-track news into
+  resource_cache kind=news) + /api/cron/deadlines (reminders + mark missed),
+  all guarded by x-cron-key == CRON_SECRET; n8n/ folder with README +
+  3 importable workflows (keepalive 08:00, refresh 02:00, deadlines 09:00;
+  replace PASTE_CRON_SECRET_HERE after import). DONE.
+- Phase 5: vitest.config.ts + tests/blocks.test.ts (9 tests, all passing),
+  `npm test` script. Progress + Settings pages shipped and nav enabled. DONE.
 
-## Next up: Phase 1 (do not start until Yash reviews the Phase 0 UI)
+## CONTENT GENERATED (live in Supabase, generate-once-cache-forever)
 
-1. Yash runs `npm run dev` in Desktop/praxis and reviews the dashboard look.
-2. Supabase schema migration + auth wiring.
-3. SEO/GEO and Digital Marketing tracks end-to-end: curriculum generation,
-   lesson player with first 3 artifact types (flowchart, quiz, card-sort),
-   streaming Socratic tutor.
-4. lib/notify.ts (ntfy push helper) + system_events writes from all API routes.
+- SEO/GEO: 6 modules (basic->pro), 24 lessons, 6 assessments. First lesson
+  content generated and verified (text/analogy/worked-example/compare/quiz/
+  scenario blocks render; NZ-localised examples).
+- Digital Marketing: 6 modules, 29 lessons, 6 assessments.
+- Remaining lesson content generates on first open (by design).
+- Tutor verified: streaming, Socratic, lesson-context aware.
 
-## Waiting on Yash (needed for Phase 1, not Phase 0)
+## RUNTIME VERIFICATION DONE (2026-07-04)
 
-- Supabase account + new project (free tier) → URL + anon key + service role key
-- Gemini API key (free, aistudio.google.com) → GEMINI_API_KEY
-- An ntfy topic name (any unique string; no signup needed) → NTFY_TOPIC
-- Optional fallback keys: Groq, OpenRouter, Serper, Exa (Tavily already installed via tvly CLI)
+Login -> dashboard 200 -> both track pages render modules -> lesson content
+generation -> lesson player renders all artifact blocks -> tutor streams.
+Screenshots delivered to Yash (dashboard, both tracks, lesson player).
 
-## Notes
+## WHAT'S LEFT FOR YASH (not code)
 
-- n8n is installed locally on Yash's machine; used from Phase 4 only.
-- Phase 1 tracks (per Yash 2026-07-04): SEO/GEO and Digital Marketing.
-- Background-session edit guard: work in a git worktree (EnterWorktree) for
-  code changes; merge back with --ff-only when verified.
+1. Change the account password (he used a temporary one).
+2. Import the 3 n8n workflows (n8n/README.md has steps + the secret swap).
+3. Optional: deploy to Vercel Hobby when ready (add env vars there; Vercel
+   cron can replace n8n by hitting the same /api/cron/* routes with the header).
+4. New tracks later: flip `active` in skill_tracks + lib/tracks.ts, open the
+   track page, click "Build my course". No new code needed.
+
+## KNOWN WATCH-OUTS
+
+- OPENROUTER_MODEL default "meta-llama/llama-3.3-70b-instruct:free" may 404 if
+  OpenRouter renames free models; override via env if grading falls back oddly.
+- supabase-js nested selects are typed loosely; the code casts via `as unknown as`.
+- PageProps<'/route'> helper types are global (Next 16), no import needed.
+- Themes: data-accent wrapper drives all colors; never hardcode hex in components.
+- Lesson blocks below the fold animate in on scroll (whileInView); a full-page
+  screenshot shows them as blank space. Not a bug.

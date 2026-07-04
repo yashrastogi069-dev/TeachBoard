@@ -30,6 +30,12 @@ export default function TodayPlan({ items }: { items: PlanItem[] }) {
       title="Today's plan"
       subtitle={`${doneCount} of ${items.length} done. Built from your deadlines and weakest rubric criteria.`}
     >
+      {items.length === 0 && (
+        <p className="rounded-xl border border-line bg-bg/40 p-4 text-xs leading-relaxed text-ink-faint">
+          Nothing scheduled yet. Open a track, finish a lesson, and your plan
+          builds itself from deadlines and weak spots.
+        </p>
+      )}
       <ul className="flex flex-col gap-2">
         {items.map((item) => {
           const track = getTrack(item.trackSlug);
