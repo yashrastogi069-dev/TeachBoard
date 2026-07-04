@@ -88,7 +88,7 @@ export default function Sidebar() {
                 style={{ boxShadow: "0 0 8px 0 var(--accent-glow)" }}
               />
               <span className="truncate">{t.title}</span>
-              <span className="ml-auto rounded-md border border-line px-1.5 py-0.5 text-[10px] text-ink-faint">
+              <span className="ml-auto shrink-0 whitespace-nowrap rounded-md border border-line px-1.5 py-0.5 text-[10px] text-ink-faint">
                 Phase 1
               </span>
             </span>

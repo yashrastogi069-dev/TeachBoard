@@ -37,10 +37,7 @@ export default function DashboardPage() {
         <ActivityChart days={seed.weeklyActivity} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-        <SkillMap map={seed.skillMap} />
-        <JobGoals goals={seed.jobGoals} />
-      </div>
+      <SkillMap map={seed.skillMap} />
 
       <MasteryGrid items={seed.trackMastery} />
 
@@ -50,8 +47,12 @@ export default function DashboardPage() {
         <Recommendations items={seed.recommendations} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <JobGoals goals={seed.jobGoals} />
         <RecentScores items={seed.recentScores} />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
         <Certifications items={seed.certifications} />
         <InsightsFeed items={seed.insights} />
       </div>

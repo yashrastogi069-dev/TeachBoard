@@ -100,16 +100,20 @@ export default function SystemHealth({
               <PlugsConnected
                 size={14}
                 className={
-                  src.status === "connected" ? "text-success" : "text-ink-faint"
+                  src.status === "connected"
+                    ? "shrink-0 text-success"
+                    : "shrink-0 text-ink-faint"
                 }
               />
-              <span className="text-xs text-ink">{src.name}</span>
-              <span className="text-[10px] text-ink-faint">{src.detail}</span>
+              <span className="shrink-0 text-xs text-ink">{src.name}</span>
+              <span className="min-w-0 truncate text-[10px] text-ink-faint">
+                {src.detail}
+              </span>
               <span
                 className={
                   src.status === "connected"
-                    ? "ml-auto rounded-md bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success"
-                    : "ml-auto rounded-md bg-warning/10 px-1.5 py-0.5 text-[10px] font-medium text-warning"
+                    ? "ml-auto shrink-0 whitespace-nowrap rounded-md bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success"
+                    : "ml-auto shrink-0 whitespace-nowrap rounded-md bg-warning/10 px-1.5 py-0.5 text-[10px] font-medium text-warning"
                 }
               >
                 {src.status === "connected" ? "connected" : "awaiting key"}

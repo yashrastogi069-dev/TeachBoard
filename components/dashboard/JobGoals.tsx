@@ -35,7 +35,7 @@ export default function JobGoals({ goals }: { goals: JobGoal[] }) {
                 className="h-full rounded-full bg-accent"
               />
             </div>
-            <p className="flex items-center gap-1.5 pt-1.5 text-[11px] text-ink-faint">
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-1.5 text-[11px] text-ink-faint">
               built from
               {goal.linkedTrackSlugs.map((slug) => {
                 const track = getTrack(slug);
@@ -43,7 +43,7 @@ export default function JobGoals({ goals }: { goals: JobGoal[] }) {
                   <span
                     key={slug}
                     data-accent={track?.accent}
-                    className="flex items-center gap-1"
+                    className="flex shrink-0 items-center gap-1 whitespace-nowrap"
                     title={track?.title}
                   >
                     <span className="size-1.5 rounded-full bg-accent" />
