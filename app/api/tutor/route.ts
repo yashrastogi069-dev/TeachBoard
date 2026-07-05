@@ -46,7 +46,17 @@ export async function POST(request: Request) {
   const admin = supabaseAdmin();
 
   try {
-    // Session: reuse or create.
+    // Session: reuse (only if it belongs to this user) or create.
+    if (sessionId) {
+      const { data: session } = await admin
+        .from("tutor_sessions")
+        .select("user_id")
+        .eq("id", sessionId)
+        .maybeSingle();
+      if (!session || session.user_id !== user.id) {
+        return NextResponse.json({ error: "Session not found" }, { status: 404 });
+      }
+    }
     if (!sessionId) {
       const { data: created, error: sessionErr } = await admin
         .from("tutor_sessions")

@@ -58,6 +58,27 @@ Login -> dashboard 200 -> both track pages render modules -> lesson content
 generation -> lesson player renders all artifact blocks -> tutor streams.
 Screenshots delivered to Yash (dashboard, both tracks, lesson player).
 
+## POST-SHIP ENHANCEMENTS (2026-07-05)
+
+- Two new artifact types added and verified in browser:
+  tree-map (expandable concept decomposition) and terminal-sim (stepped
+  console walkthrough with realistic tool output). Both in lib/blocks.ts,
+  InteractiveBlocks.tsx, ArtifactRenderer.tsx, curriculum palette prompt,
+  and unit tests. Total artifact types now 13.
+- Security: /api/tutor now verifies a client-supplied sessionId belongs to
+  the signed-in user before reusing it (IDOR fix; admin client bypasses RLS).
+- Pre-authored premium lessons: scripts/AUTHORING spec + scripts/import
+  pipeline (scripts/import-lessons.test.ts + scripts/vitest.import.config.ts).
+  Run: LESSON_CONTENT_DIR=<dir> npx vitest run --config
+  scripts/vitest.import.config.ts. It schema-validates every <lessonId>.json
+  and writes lessons.content; invalid files fail with the exact zod error.
+- 5 lessons pre-authored at premium quality and imported (SEO/GEO first
+  lesson + 4 across tracks, showcasing tree-map/terminal-sim/card-sort/etc).
+  The batch authoring of the remaining ~48 lessons stopped when the account
+  ran OUT OF USAGE CREDITS mid-run. Those lessons still auto-generate on
+  first open via the free LLM chain, so every lesson works today; re-run the
+  authoring batch to upgrade them to premium once credits are topped up.
+
 ## WHAT'S LEFT FOR YASH (not code)
 
 1. Change the account password (he used a temporary one).

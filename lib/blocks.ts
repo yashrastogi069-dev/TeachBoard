@@ -123,6 +123,55 @@ export const scenarioBlock = z.object({
   hint: z.string().min(1),
 });
 
+/*
+  Hierarchical concept map: a root idea that branches into parts, each part
+  expandable to reveal its detail. Two levels below the root keeps it
+  readable on mobile.
+*/
+const treeLeaf = z.object({
+  label: z.string().min(1),
+  detail: z.string().min(1),
+});
+export const treeMapBlock = z.object({
+  type: z.literal("tree-map"),
+  title: z.string().min(1),
+  root: z.object({
+    label: z.string().min(1),
+    children: z
+      .array(
+        z.object({
+          label: z.string().min(1),
+          detail: z.string().min(1),
+          children: z.array(treeLeaf).max(5).optional(),
+        })
+      )
+      .min(2)
+      .max(6),
+  }),
+});
+
+/*
+  Simulated console walkthrough: the learner steps through real commands
+  (terminal, SQL, robots.txt fetches, API calls) one at a time and sees the
+  output plus why it matters. No real execution; the value is reading real
+  tool output safely.
+*/
+export const terminalSimBlock = z.object({
+  type: z.literal("terminal-sim"),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  steps: z
+    .array(
+      z.object({
+        command: z.string().min(1),
+        output: z.string().min(1),
+        note: z.string().optional(),
+      })
+    )
+    .min(2)
+    .max(8),
+});
+
 export const lessonBlock = z.discriminatedUnion("type", [
   textBlock,
   analogyBlock,
@@ -135,6 +184,8 @@ export const lessonBlock = z.discriminatedUnion("type", [
   chartBlock,
   videoBlock,
   scenarioBlock,
+  treeMapBlock,
+  terminalSimBlock,
 ]);
 
 export const lessonContentSchema = z.object({

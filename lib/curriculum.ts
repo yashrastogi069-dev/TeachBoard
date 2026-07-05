@@ -191,6 +191,8 @@ const BLOCK_PALETTE = `Available block types (use 6-12 blocks, mix at least 5 ty
 - {"type":"compare","title":"...","goodLabel":"...","badLabel":"...","goodMarkdown":"...","badMarkdown":"..."} good vs bad example side by side
 - {"type":"chart","title":"...","unit":"...","series":[{"label":"...","value":42}]} small bar comparison
 - {"type":"video","title":"...","searchQuery":"..."} points to a video worth watching for this topic
+- {"type":"tree-map","title":"...","root":{"label":"...","children":[{"label":"...","detail":"...","children":[{"label":"...","detail":"..."}]}]}} expandable concept map that decomposes one big idea into 2-6 branches (branch children optional, max 5)
+- {"type":"terminal-sim","title":"...","description":"...","steps":[{"command":"...","output":"...","note":"..."}]} step-through console walkthrough with real commands and realistic output, 2-8 steps
 - {"type":"scenario","prompt":"...","hint":"..."} an open situation the learner should reason about with the tutor`;
 
 export async function ensureLessonContent(lessonId: string): Promise<LessonContent> {

@@ -15,6 +15,8 @@ import {
   QuizBlock,
   ScenarioBlock,
   SliderSimBlock,
+  TerminalSimBlock,
+  TreeMapBlock,
 } from "@/components/artifacts/InteractiveBlocks";
 
 /*
@@ -52,6 +54,10 @@ export default function ArtifactRenderer({
       return <CardSortBlock block={block} onCheck={onCheck} />;
     case "slider-sim":
       return <SliderSimBlock block={block} />;
+    case "tree-map":
+      return <TreeMapBlock block={block} />;
+    case "terminal-sim":
+      return <TerminalSimBlock block={block} />;
     case "scenario":
       return <ScenarioBlock block={block} onDiscuss={onDiscuss} />;
     default:

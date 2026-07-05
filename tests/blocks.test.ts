@@ -5,6 +5,8 @@ import {
   quizBlock,
   scoreCardSort,
   scoreQuiz,
+  terminalSimBlock,
+  treeMapBlock,
 } from "@/lib/blocks";
 
 const quiz = quizBlock.parse({
@@ -135,6 +137,77 @@ describe("lessonContentSchema", () => {
 
   it("rejects a quiz whose correctIndex is negative", () => {
     const parsed = quizBlock.safeParse({ ...quiz, correctIndex: -1 });
+    expect(parsed.success).toBe(false);
+  });
+});
+
+describe("tree-map block", () => {
+  it("accepts a two-level concept map", () => {
+    const parsed = treeMapBlock.safeParse({
+      type: "tree-map",
+      title: "What makes up technical SEO",
+      root: {
+        label: "Technical SEO",
+        children: [
+          {
+            label: "Crawlability",
+            detail: "Can search engines reach every page that matters?",
+            children: [
+              { label: "robots.txt", detail: "Rules for what crawlers may fetch." },
+              { label: "XML sitemap", detail: "The list of URLs you want crawled." },
+            ],
+          },
+          {
+            label: "Indexability",
+            detail: "Once crawled, is the page allowed and worthy of the index?",
+          },
+        ],
+      },
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("rejects a root with a single branch", () => {
+    const parsed = treeMapBlock.safeParse({
+      type: "tree-map",
+      title: "Too thin",
+      root: {
+        label: "Idea",
+        children: [{ label: "Only branch", detail: "Not a decomposition." }],
+      },
+    });
+    expect(parsed.success).toBe(false);
+  });
+});
+
+describe("terminal-sim block", () => {
+  it("accepts a stepped console walkthrough", () => {
+    const parsed = terminalSimBlock.safeParse({
+      type: "terminal-sim",
+      title: "Check how Google sees a page",
+      description: "Fetch a page the way a crawler does and read the signals.",
+      steps: [
+        {
+          command: "curl -I https://example.co.nz/products",
+          output: "HTTP/2 200\ncontent-type: text/html\nx-robots-tag: noindex",
+          note: "The 200 looks healthy, but x-robots-tag: noindex blocks indexing.",
+        },
+        {
+          command: "curl -s https://example.co.nz/robots.txt",
+          output: "User-agent: *\nDisallow: /cart\nSitemap: https://example.co.nz/sitemap.xml",
+        },
+      ],
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("rejects a walkthrough with a single step", () => {
+    const parsed = terminalSimBlock.safeParse({
+      type: "terminal-sim",
+      title: "One step",
+      description: "Not enough to walk through.",
+      steps: [{ command: "ls", output: "app lib" }],
+    });
     expect(parsed.success).toBe(false);
   });
 });
