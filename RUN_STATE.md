@@ -79,6 +79,31 @@ Screenshots delivered to Yash (dashboard, both tracks, lesson player).
   first open via the free LLM chain, so every lesson works today; re-run the
   authoring batch to upgrade them to premium once credits are topped up.
 
+## LEARNING-BY-DOING UPGRADE (2026-07-10, in progress)
+
+- Iteration 1 (Mission Engine) DONE: mission/simulation/reflection/expert-review
+  blocks, mission_runs table + /api/mission route (save + review +
+  whiteboard-review actions), MissionBlocks.tsx + MissionContext, curriculum
+  palette updated, 1 demo lesson authored+imported (Common Technical SEO Issues,
+  seo-geo track), app-wide design polish pass (larger type scale 17px/1.7
+  line-height, expanded 5-layer surface tokens, more motion, DESIGN.md updated).
+- Iteration 3 (Artifact catalog v2) DONE: 9 new block types (graph-diagram,
+  framework-canvas, financial-statement, chart-advanced, timeline, card-match,
+  whiteboard, infographic, hotspot) - schemas+scoring+101 unit tests in
+  lib/blocks.ts, renderer components in components/artifacts/, wired into
+  ArtifactRenderer.tsx + LessonPlayer.tsx mastery scoring + lib/curriculum.ts
+  generation palette. Full build/tsc/test verified green.
+- New migration pending manual application: supabase/migrations/0002_mission_runs.sql
+  - no DDL execution path exists in this repo (same as the original schema), must
+  be pasted into the Supabase SQL editor once.
+- Not yet started: iteration 2 (flashcard-deck + spaced repetition + /review page
+  + reminders), iteration 5b (drill mode, debate mode, teach-back), iteration 4
+  (ga4-sim/serp-sim content on the hotspot primitive), iteration 5 (assignments +
+  harder replay variants + mastery model), iteration 6 (curriculum engine rewrite
+  + module regeneration sample), iteration 7 (final verification pass).
+- Full spec for everything above and below lives in PLAN.md - read that first for
+  any resumed session on this upgrade.
+
 ## WHAT'S LEFT FOR YASH (not code)
 
 1. Change the account password (he used a temporary one).

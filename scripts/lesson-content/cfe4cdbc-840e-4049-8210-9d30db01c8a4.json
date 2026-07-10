@@ -1,0 +1,317 @@
+{
+  "intro": "A site can have great content and still lose traffic quietly, because search engines get confused about which page to rank, or send visitors to pages that no longer exist. This lesson teaches you to spot and fix the three most common technical SEO issues, then puts you in the seat of a real audit with a real deadline.",
+  "blocks": [
+    {
+      "type": "text",
+      "markdown": "Three technical problems quietly waste more ranking potential than almost anything else on a website.\n\n**Duplicate content** is when the same or near-identical content is reachable at more than one URL. This happens more often than people expect: a room-booking page reachable at `/rooms/suite` and also at `/rooms/suite?session_id=8821`, or the same page served over `http://`, `https://`, `www`, and non-`www`. To a search engine these look like separate pages competing with each other, which splits ranking signals across all of them instead of concentrating them on one.\n\nA **broken link** is a link pointing at a page that no longer exists, usually returning a **404 status** (the code a server sends when a page is not found). Internal broken links waste the time a search engine's crawler spends on your site (its **crawl budget**) and send real visitors to a dead end.\n\nA **canonical tag** (written in HTML as `<link rel=\"canonical\" href=\"...\">`) is a note in a page's code that tells search engines \"if you find duplicates of this page, this URL is the real one, send all the ranking credit here.\" Without one, the search engine has to guess which version is canonical, and it does not always guess the version you wanted."
+    },
+    {
+      "type": "analogy",
+      "title": "The filing cabinet with no labels",
+      "markdown": "Picture a filing cabinet where the same contract has been photocopied into three different drawers because three different people needed a copy. **Duplicate content** is those three copies sitting in three drawers with no note connecting them: anyone searching the cabinet has to figure out which copy is the master, and might photocopy the wrong one again.\n\nA **broken link** is a signpost on the office wall pointing to \"Room 204: Contracts\" when Room 204 was knocked through into the open-plan area two years ago. Anyone who follows the sign wastes a trip.\n\nA **canonical tag** is a sticky note stuck to two of the three copies that says \"this is a photocopy, the original is in Drawer 2.\" Once every copy has that note, anyone searching the cabinet goes straight to Drawer 2, and Drawer 2 gets credited as the one true version."
+    },
+    {
+      "type": "flowchart",
+      "title": "How Google picks a canonical URL when you do not tell it one",
+      "nodes": [
+        { "id": "crawl", "label": "Crawler finds several near-identical URLs" },
+        { "id": "cluster", "label": "Groups them into one duplicate cluster" },
+        { "id": "signals", "label": "Checks signals: internal links, sitemap, redirects, HTTPS" },
+        { "id": "pick", "label": "Algorithm picks ONE as canonical" },
+        { "id": "right", "label": "Usually the version you wanted" },
+        { "id": "wrong", "label": "Sometimes the wrong one (e.g. the http:// or parameter version)" }
+      ],
+      "edges": [
+        { "from": "crawl", "to": "cluster" },
+        { "from": "cluster", "to": "signals" },
+        { "from": "signals", "to": "pick" },
+        { "from": "pick", "to": "right", "label": "if signals are consistent" },
+        { "from": "pick", "to": "wrong", "label": "if signals conflict or are missing" }
+      ]
+    },
+    {
+      "type": "compare",
+      "title": "A canonical tag that actually helps vs. one that quietly breaks",
+      "goodLabel": "Consistent canonical",
+      "badLabel": "Conflicting canonical",
+      "goodMarkdown": "Every version of the page, including parameterised and duplicate copies, carries the SAME tag:\n\n```html\n<link rel=\"canonical\" href=\"https://www.example.co.nz/rooms/suite\" />\n```\n\nOne clear target, no matter which URL was crawled. Ranking signals consolidate onto it."
+      ,
+      "badMarkdown": "The parameterised URL self-references instead of pointing at the clean page:\n\n```html\n<!-- served at /rooms/suite?session_id=8821 -->\n<link rel=\"canonical\" href=\"https://www.example.co.nz/rooms/suite?session_id=8821\" />\n```\n\nThis tells search engines each parameterised copy IS the canonical version, which defeats the purpose and keeps the duplicate cluster alive."
+    },
+    {
+      "type": "terminal-sim",
+      "title": "Checking a canonical tag from the command line",
+      "description": "A quick way to sanity-check a live page without opening a browser: fetch the headers and the page source, and grep for the canonical tag.",
+      "steps": [
+        {
+          "command": "curl -sI \"https://www.example.co.nz/rooms/suite?session_id=8821\"",
+          "output": "HTTP/2 200\ncontent-type: text/html; charset=utf-8\nx-robots-tag: (none)",
+          "note": "Status 200 means the parameterised URL is being served directly, not redirected. If there is no canonical tag either, this URL is a live duplicate."
+        },
+        {
+          "command": "curl -s \"https://www.example.co.nz/rooms/suite?session_id=8821\" | grep -i 'rel=\"canonical\"'",
+          "output": "(no output)",
+          "note": "An empty result means no canonical tag was found in the page source at all. This page is fully exposed as a duplicate with no signal pointing anywhere."
+        },
+        {
+          "command": "curl -s \"https://www.example.co.nz/rooms/suite\" | grep -i 'rel=\"canonical\"'",
+          "output": "<link rel=\"canonical\" href=\"https://www.example.co.nz/rooms/suite\" />",
+          "note": "The clean URL does self-reference correctly. The fix is to add the same tag to every parameterised and alternate-protocol version of this page."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "question": "A hotel site serves the same room page at https://example.co.nz/rooms/suite and https://www.example.co.nz/rooms/suite, with no canonical tag on either. What is the most likely consequence?",
+      "options": [
+        "Nothing, search engines automatically merge identical pages with no downside",
+        "Ranking signals (like links pointing at the page) get split across both URLs instead of consolidating on one",
+        "The site gets penalised for having two URLs",
+        "Only the https:// version can ever be indexed"
+      ],
+      "correctIndex": 1,
+      "explanation": "Search engines treat the www and non-www versions as separate URLs unless told otherwise. Any links, shares, or authority pointing at either version get split between them rather than combining, which can leave both versions ranking lower than a single consolidated URL would. It is not a penalty, just diluted signal, and it is fixed with a canonical tag plus a redirect to one preferred version."
+    },
+    {
+      "type": "mission",
+      "title": "The Friday Audit: Waitomo Boutique Stays",
+      "role": "You are the freelance technical SEO auditor for Waitomo Boutique Stays, a 14-room boutique accommodation business near the Waitomo Caves, brought in for a one-off audit ahead of the summer booking season.",
+      "stakes": "Organic bookings have slipped for three straight months and the general manager wants your findings by Friday afternoon, before she presents to the owners. If the audit does not turn into a clear, doable fix list, the owners will move the SEO retainer to a bigger Auckland agency next quarter.",
+      "objective": "Diagnose the technical issues actually costing the site traffic, decide what to fix given only a few hours of developer time this week, and present findings the GM can act on immediately.",
+      "constraints": [
+        { "label": "Deadline", "value": "Friday 4pm, before the owners' meeting" },
+        { "label": "Developer time available", "value": "3 hours this week, no more" },
+        { "label": "Current organic traffic", "value": "about 8,400 sessions a month, down from 10,200 a quarter ago" },
+        { "label": "Client relationship", "value": "one difficult quarter away from losing the retainer" }
+      ],
+      "briefing": "Waitomo Boutique Stays' website drives roughly 60% of its direct bookings outside of what Booking.com and Airbnb take a commission on, so organic traffic is not a vanity metric here, it is real revenue. You have pulled a fresh Screaming Frog crawl and the Search Console coverage report. Both are messy: thousands of URLs, most of them duplicates of the fourteen actual room and experience pages. Time to work out what is really costing them rankings, and what is just noise you can leave alone."
+    },
+    {
+      "type": "simulation",
+      "title": "Run the audit under a real deadline",
+      "metrics": [
+        { "id": "organicTraffic", "label": "Organic Traffic", "unit": "sessions/month", "start": 8400, "goal": 10200, "higherIsBetter": true },
+        { "id": "crawlWaste", "label": "Wasted Crawl Budget", "unit": "%", "start": 32, "goal": 10, "higherIsBetter": false },
+        { "id": "bookings", "label": "Monthly Organic Bookings", "unit": "bookings", "start": 21, "goal": 30, "higherIsBetter": true },
+        { "id": "clientTrust", "label": "Client Trust", "unit": "/100", "start": 55, "goal": 85, "higherIsBetter": true }
+      ],
+      "stages": [
+        {
+          "id": "duplicate-content",
+          "situation": "Search Console's coverage report shows over 1,200 indexed and crawled URLs, even though the site only has fourteen real room and experience pages. Almost all of the extra URLs are the same room pages with a `?session_id=` tracking parameter appended by the old booking widget. None of them carry a canonical tag.",
+          "choices": [
+            {
+              "id": "canonical-fix",
+              "label": "Add a canonical tag on every parameterised URL pointing at the clean page",
+              "quality": "best",
+              "feedback": "Within a couple of weeks Google starts consolidating ranking signals onto the clean URLs and stops re-crawling thousands of near-identical variants.",
+              "effects": [
+                { "metricId": "crawlWaste", "delta": -12 },
+                { "metricId": "organicTraffic", "delta": 180 }
+              ]
+            },
+            {
+              "id": "noindex-fix",
+              "label": "Add a noindex tag to the parameterised URLs instead",
+              "quality": "good",
+              "feedback": "The duplicates stop being indexed, which helps, but any link equity those old parameterised URLs had accumulated is forfeited rather than consolidated.",
+              "effects": [
+                { "metricId": "crawlWaste", "delta": -8 },
+                { "metricId": "organicTraffic", "delta": 60 }
+              ]
+            },
+            {
+              "id": "ignore-dup",
+              "label": "Leave it for now, the real content is fine, focus on writing the report",
+              "quality": "poor",
+              "feedback": "The duplicate cluster keeps growing every time the old booking widget fires, and the crawler keeps burning its budget on copies instead of your newest content.",
+              "effects": [
+                { "metricId": "crawlWaste", "delta": 5 },
+                { "metricId": "organicTraffic", "delta": -40 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "broken-links",
+          "situation": "The crawl flags 46 internal links, several from the homepage and the main navigation, pointing at three room types that were merged into a single 'Cave View Suite' listing last year. All 46 return a 404.",
+          "choices": [
+            {
+              "id": "redirect-broken",
+              "label": "301 redirect each old room URL to the new Cave View Suite page",
+              "quality": "best",
+              "feedback": "Visitors and link equity from the old, still-linked-to pages both land on a live page instead of a dead end.",
+              "effects": [
+                { "metricId": "organicTraffic", "delta": 90 },
+                { "metricId": "bookings", "delta": 3 },
+                { "metricId": "crawlWaste", "delta": -3 }
+              ]
+            },
+            {
+              "id": "relink-broken",
+              "label": "Manually update all 46 links to point directly at the new page",
+              "quality": "good",
+              "feedback": "Fixes the immediate 404s visitors hit, but any external sites or bookmarks still pointing at the old URLs still dead-end since there is no redirect.",
+              "effects": [
+                { "metricId": "organicTraffic", "delta": 50 },
+                { "metricId": "bookings", "delta": 1 }
+              ]
+            },
+            {
+              "id": "ignore-broken",
+              "label": "Leave them, visitors will probably use the search bar",
+              "quality": "poor",
+              "feedback": "The homepage keeps sending both crawlers and real guests to dead ends; a few leave the site entirely rather than search again.",
+              "effects": [
+                { "metricId": "organicTraffic", "delta": -60 },
+                { "metricId": "bookings", "delta": -2 },
+                { "metricId": "crawlWaste", "delta": 4 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dev-crunch",
+          "situation": "It's Wednesday. The developer messages you: 'I've only got 3 hours this week, and I still need to fix the canonical/www conflict you flagged separately (the site serves duplicate content across http, https, www and non-www with nothing marking which is real). What should I prioritise?'",
+          "choices": [
+            {
+              "id": "spend-on-canonical",
+              "label": "Spend all 3 hours fixing the protocol/www conflict now, keep the written report short",
+              "quality": "best",
+              "feedback": "The dev ships a single 301 redirect rule plus sitewide canonical tags, resolving the split across all four URL versions in one pass.",
+              "effects": [
+                { "metricId": "organicTraffic", "delta": 40 }
+              ]
+            },
+            {
+              "id": "split-time",
+              "label": "Split the time: patch only the worst http/https split, write a fuller report",
+              "quality": "good",
+              "feedback": "The dev partially resolves the conflict, the biggest chunk of duplicated authority is fixed but the www/non-www split remains for later.",
+              "effects": [
+                { "metricId": "organicTraffic", "delta": 15 }
+              ]
+            },
+            {
+              "id": "defer-canonical",
+              "label": "Skip the fix this week, prioritise getting the report to the GM on time",
+              "quality": "poor",
+              "feedback": "The report ships on time, but the protocol/www conflict keeps splitting ranking signal for at least another month until dev time frees up.",
+              "effects": [
+                { "metricId": "crawlWaste", "delta": 6 },
+                { "metricId": "organicTraffic", "delta": -20 }
+              ],
+              "goTo": "reporting"
+            }
+          ]
+        },
+        {
+          "id": "canonical-conflict",
+          "situation": "With dev time committed, you confirm the scope: the site is fully reachable at http://, https://, www.example.co.nz and example.co.nz, all serving identical content, none marked as canonical, splitting authority four ways.",
+          "choices": [
+            {
+              "id": "full-consolidation",
+              "label": "Pick https://www as canonical, 301 redirect the other three versions, add matching canonical tags sitewide",
+              "quality": "best",
+              "feedback": "All ranking signal that was split four ways starts consolidating onto one URL within the next crawl cycle.",
+              "effects": [
+                { "metricId": "crawlWaste", "delta": -10 },
+                { "metricId": "organicTraffic", "delta": 150 },
+                { "metricId": "bookings", "delta": 5 }
+              ]
+            },
+            {
+              "id": "tags-only",
+              "label": "Add canonical tags only, leave the redirects for a future sprint",
+              "quality": "good",
+              "feedback": "Search engines get a stronger hint about the preferred version, but visitors and old links can still land on the non-canonical versions since there is no redirect.",
+              "effects": [
+                { "metricId": "crawlWaste", "delta": -4 },
+                { "metricId": "organicTraffic", "delta": 50 }
+              ]
+            },
+            {
+              "id": "note-only",
+              "label": "Note it in the report as low priority for now and move on",
+              "quality": "poor",
+              "feedback": "The four-way split continues undisturbed; it stays exactly as costly next quarter as it is this quarter.",
+              "effects": [
+                { "metricId": "crawlWaste", "delta": 3 },
+                { "metricId": "organicTraffic", "delta": -10 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "reporting",
+          "situation": "Friday, 3:45pm. You are about to send the GM your findings before her meeting with the owners.",
+          "choices": [
+            {
+              "id": "prioritized-report",
+              "label": "Send a short list ranked by traffic impact and dev hours required, with a two-week timeline",
+              "quality": "best",
+              "feedback": "The GM walks into the owners' meeting with three concrete, sequenced actions instead of a wall of technical findings. She tells you afterwards it was the clearest audit she has ever received.",
+              "effects": [
+                { "metricId": "clientTrust", "delta": 25 }
+              ]
+            },
+            {
+              "id": "full-findings",
+              "label": "Send the complete technical findings list without ranking them",
+              "quality": "good",
+              "feedback": "Everything is accurate and thorough, but the GM has to work out for herself what to fix first before Monday, and says so in her reply.",
+              "effects": [
+                { "metricId": "clientTrust", "delta": 8 }
+              ]
+            },
+            {
+              "id": "templated-report",
+              "label": "Send a generic templated audit summary to save time",
+              "quality": "poor",
+              "feedback": "The GM replies asking which parts actually apply to her site; the report reads like it could have been written for anyone.",
+              "effects": [
+                { "metricId": "clientTrust", "delta": -15 }
+              ]
+            }
+          ]
+        }
+      ],
+      "debrief": "A technical audit is only as useful as the fix list it produces under a real deadline. Duplicate content and broken links both waste crawl budget and split the ranking signal a site has already earned; canonical tags and redirects are how you tell search engines, and browsers, which URL actually matters. But the tightest technical fix in the world still needs to survive contact with a client's calendar: three hours of dev time forces you to choose, and how you present the outcome shapes whether the client trusts you enough to fund the next round of fixes at all."
+    },
+    {
+      "type": "reflection",
+      "prompt": "Your organic traffic recovered furthest after fixing whichever conflict you prioritised with the developer's three hours, yet client trust moved almost entirely on how you wrote the final report, not on how many issues you actually fixed. Why do those two outcomes not move together, and does that change how you would sequence a real audit next time?",
+      "guidance": "A strong answer names the mechanism behind the traffic recovery specifically (canonical consolidation frees up crawl budget and re-merges split ranking signal; redirects preserve link equity that a plain fix or removal would lose) rather than just restating what happened. It should also explain why trust and traffic can diverge: a GM judges the audit by whether she can act on it before her own deadline, so a well-sequenced, clearly prioritised report can rebuild trust even before the technical fixes have had time to show up in the traffic numbers, and a technically perfect fix delivered as an unreadable wall of findings can still cost trust."
+    },
+    {
+      "type": "expert-review",
+      "title": "Senior Technical SEO Review",
+      "persona": "Priya Nair, senior technical SEO consultant with 11 years of agency experience across New Zealand and Australian hospitality and retail clients",
+      "rubric": [
+        "Correctly diagnosed the duplicate content cause (missing canonical tags on parameterised URLs) before proposing a fix",
+        "Prioritised the highest-impact, lowest-effort fix given only 3 hours of developer time, rather than treating every issue as equally urgent",
+        "Chose redirects over silent removal or manual relinking so link equity and user experience were both preserved",
+        "Presented findings in a ranked, actionable format a non-technical GM could act on before her own deadline",
+        "Weighed traffic recovery against the client relationship rather than optimising purely for the technical fix"
+      ]
+    },
+    {
+      "type": "card-sort",
+      "title": "You're auditing a different client's site. Sort each finding by how urgently it needs attention.",
+      "buckets": [
+        { "id": "now", "label": "Fix this sprint" },
+        { "id": "next", "label": "Fix next sprint" },
+        { "id": "monitor", "label": "Monitor only" }
+      ],
+      "cards": [
+        { "id": "c1", "label": "Homepage links to 12 discontinued product pages, all returning 404", "bucketId": "now" },
+        { "id": "c2", "label": "Site serves identical content at http:// and https://, no canonical tag either way", "bucketId": "now" },
+        { "id": "c3", "label": "A blog category page and a tag page list almost the same 8 articles, both indexed, no canonical", "bucketId": "next" },
+        { "id": "c4", "label": "One old blog post from 2019 has a broken outbound link to a source that no longer exists", "bucketId": "monitor" },
+        { "id": "c5", "label": "A print-friendly version of each product page is indexed as a near-duplicate with no canonical tag", "bucketId": "next" },
+        { "id": "c6", "label": "Search Console shows a slow, steady rise in crawled-but-not-indexed pages over the last month", "bucketId": "monitor" },
+        { "id": "c7", "label": "A/B test URLs with ?variant= parameters are all indexed as separate pages with duplicate content", "bucketId": "now" }
+      ]
+    }
+  ]
+}

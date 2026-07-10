@@ -2,75 +2,86 @@
 
 /*
   Praxis design tokens.
-  Base is a near-black neutral ramp; ONE accent family drives all color.
-  The accent is switched per skill track by setting data-accent on any
-  ancestor element (the track layout does this). Components must only
-  ever reference var(--accent*) so theming stays automatic.
+  Base is a near-black neutral ramp with a faint cool tint on raised surfaces
+  so elevation reads as depth, not just lighter gray. ONE accent family drives
+  all color; the accent is switched per skill track by setting data-accent on
+  any ancestor element (the track layout does this). Components must only ever
+  reference var(--accent*) / token-backed classes so theming stays automatic.
 */
 
 :root {
-  /* neutral ramp */
+  /* neutral surface ladder (deepest -> highest), faint cool-violet tint */
+  --bg-inset: #060507;
   --bg: #09090b;
-  --bg-raised: #101013;
-  --bg-overlay: #17171b;
+  --bg-raised: #111014;
+  --bg-overlay: #191820;
+  --bg-elevated: #221f2b;
   --border: rgba(255, 255, 255, 0.07);
   --border-strong: rgba(255, 255, 255, 0.14);
-  --text: #ededf0;
-  --text-muted: #a2a2ad;
-  --text-faint: #75757f;
+  --text: #f2f2f5;
+  --text-muted: #b0b0bc;
+  --text-faint: #7c7c88;
 
   /* default accent: indigo (global / no track selected) */
   --accent: #6d7cff;
-  --accent-bright: #93a0ff;
-  --accent-soft: rgba(109, 124, 255, 0.14);
-  --accent-glow: rgba(109, 124, 255, 0.35);
+  --accent-bright: #9aa6ff;
+  --accent-soft: rgba(109, 124, 255, 0.16);
+  --accent-glow: rgba(109, 124, 255, 0.42);
 
   /* status */
   --success: #34d399;
+  --success-soft: rgba(52, 211, 153, 0.14);
   --warning: #fbbf24;
+  --warning-soft: rgba(251, 191, 36, 0.14);
   --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.14);
+
+  /* motion */
+  --ease-brand: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 /* per-track accents: set data-accent on the track layout wrapper */
 [data-accent="ai"] {
   --accent: #22d3ee;
-  --accent-bright: #67e8f9;
-  --accent-soft: rgba(34, 211, 238, 0.13);
-  --accent-glow: rgba(34, 211, 238, 0.35);
+  --accent-bright: #7bedfa;
+  --accent-soft: rgba(34, 211, 238, 0.15);
+  --accent-glow: rgba(34, 211, 238, 0.42);
 }
 
 [data-accent="marketing"] {
   --accent: #a855f7;
-  --accent-bright: #c084fc;
-  --accent-soft: rgba(168, 85, 247, 0.14);
-  --accent-glow: rgba(168, 85, 247, 0.35);
+  --accent-bright: #cd9bff;
+  --accent-soft: rgba(168, 85, 247, 0.16);
+  --accent-glow: rgba(168, 85, 247, 0.44);
 }
 
 [data-accent="seo"] {
   --accent: #10b981;
-  --accent-bright: #34d399;
-  --accent-soft: rgba(16, 185, 129, 0.13);
-  --accent-glow: rgba(16, 185, 129, 0.35);
+  --accent-bright: #3ee0a4;
+  --accent-soft: rgba(16, 185, 129, 0.15);
+  --accent-glow: rgba(16, 185, 129, 0.42);
 }
 
 [data-accent="analytics"] {
   --accent: #f59e0b;
-  --accent-bright: #fbbf24;
-  --accent-soft: rgba(245, 158, 11, 0.13);
-  --accent-glow: rgba(245, 158, 11, 0.35);
+  --accent-bright: #fbcb4d;
+  --accent-soft: rgba(245, 158, 11, 0.15);
+  --accent-glow: rgba(245, 158, 11, 0.42);
 }
 
 [data-accent="finance"] {
   --accent: #d4a843;
-  --accent-bright: #e6c46a;
-  --accent-soft: rgba(212, 168, 67, 0.14);
-  --accent-glow: rgba(212, 168, 67, 0.35);
+  --accent-bright: #ecca77;
+  --accent-soft: rgba(212, 168, 67, 0.16);
+  --accent-glow: rgba(212, 168, 67, 0.42);
 }
 
 @theme inline {
+  --color-bg-inset: var(--bg-inset);
   --color-bg: var(--bg);
   --color-bg-raised: var(--bg-raised);
   --color-bg-overlay: var(--bg-overlay);
+  --color-bg-elevated: var(--bg-elevated);
   --color-line: var(--border);
   --color-line-strong: var(--border-strong);
   --color-ink: var(--text);
@@ -80,18 +91,53 @@
   --color-accent-bright: var(--accent-bright);
   --color-accent-soft: var(--accent-soft);
   --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
   --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-space-grotesk);
+
+  --ease-brand: var(--ease-brand);
+
+  /*
+    Larger, more readable type scale with generous line-heights.
+    Body baseline is 17px; prose steps carry loose leading, headings tight.
+    Applies everywhere text-xs..text-4xl is used, so readability lifts
+    consistently without per-component overrides.
+  */
+  --text-xs: 0.8125rem;      /* 13px */
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.9375rem;      /* 15px */
+  --text-sm--line-height: 1.6;
+  --text-base: 1.0625rem;    /* 17px */
+  --text-base--line-height: 1.7;
+  --text-lg: 1.1875rem;      /* 19px */
+  --text-lg--line-height: 1.6;
+  --text-xl: 1.375rem;       /* 22px */
+  --text-xl--line-height: 1.4;
+  --text-2xl: 1.625rem;      /* 26px */
+  --text-2xl--line-height: 1.25;
+  --text-3xl: 2.0625rem;     /* 33px */
+  --text-3xl--line-height: 1.15;
+  --text-4xl: 2.5rem;        /* 40px */
+  --text-4xl--line-height: 1.1;
+}
+
+html {
+  font-size: 16px;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-size: var(--text-base);
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
@@ -115,4 +161,63 @@ body {
 /* metric numbers never shift width as values change */
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* display type gets a hair of negative tracking so headings read as designed */
+.font-display {
+  letter-spacing: -0.012em;
+}
+
+/*
+  Accent glow helpers. Glow is still rationed (DESIGN.md budget) but Yash asked
+  for a slightly more generous, tasteful use; these keep it consistent instead
+  of scattering inline box-shadows.
+*/
+.glow-accent {
+  box-shadow: 0 0 32px -16px var(--accent-glow);
+}
+.glow-accent-strong {
+  box-shadow: 0 0 56px -18px var(--accent-glow);
+}
+/* an interactive surface that lifts its glow on hover (respects reduced motion below) */
+.glow-hover {
+  transition: box-shadow 0.2s var(--ease-brand), border-color 0.2s var(--ease-brand);
+}
+.glow-hover:hover {
+  box-shadow: 0 0 34px -18px var(--accent-glow);
+}
+
+/*
+  A soft radial accent wash for hero/flagship surfaces (mission briefing).
+  Sits behind content as a decorative layer.
+*/
+.accent-wash::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    120% 90% at 15% 0%,
+    var(--accent-soft) 0%,
+    transparent 55%
+  );
+  pointer-events: none;
+}
+
+/*
+  Global reduced-motion safety net for CSS transitions/animations. Motion
+  components additionally branch on useReducedMotion(); this covers everything
+  driven purely by CSS.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .glow-hover:hover {
+    box-shadow: none;
+  }
 }

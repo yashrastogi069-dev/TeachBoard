@@ -7,6 +7,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight, CheckCircle, Sparkle } from "@phosphor-icons/react";
 import type { LessonContent } from "@/lib/blocks";
 import ArtifactRenderer from "@/components/artifacts/ArtifactRenderer";
+import { MissionProvider } from "@/components/lesson/MissionContext";
 import { useTutor } from "@/components/shell/TutorContext";
 
 const EASE: [number, number, number, number] = [0.23, 1, 0.32, 1];
@@ -99,7 +100,18 @@ export default function LessonPlayer({
 
   const checkScores = Object.values(checks);
   const interactiveCount =
-    content?.blocks.filter((b) => b.type === "quiz" || b.type === "card-sort").length ?? 0;
+    content?.blocks.filter(
+      (b) =>
+        b.type === "quiz" ||
+        b.type === "card-sort" ||
+        b.type === "simulation" ||
+        b.type === "reflection" ||
+        b.type === "expert-review" ||
+        b.type === "card-match" ||
+        b.type === "hotspot" ||
+        b.type === "whiteboard" ||
+        (b.type === "framework-canvas" && b.mode === "presented")
+    ).length ?? 0;
   const mastery =
     checkScores.length > 0
       ? Math.round(checkScores.reduce((a, b) => a + b, 0) / checkScores.length)
@@ -186,23 +198,27 @@ export default function LessonPlayer({
         )}
       </header>
 
-      <div className="flex flex-col gap-4">
-        {content.blocks.map((block, i) => (
-          <motion.div
-            key={i}
-            initial={reduce ? false : { opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.15 }}
-            transition={{ duration: 0.24, ease: EASE }}
-          >
-            <ArtifactRenderer
-              block={block}
-              onCheck={(score) => setChecks((c) => ({ ...c, [i]: score }))}
-              onDiscuss={openWithMessage}
-            />
-          </motion.div>
-        ))}
-      </div>
+      <MissionProvider>
+        <div className="flex flex-col gap-4">
+          {content.blocks.map((block, i) => (
+            <motion.div
+              key={i}
+              initial={reduce ? false : { opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.24, ease: EASE }}
+            >
+              <ArtifactRenderer
+                block={block}
+                onCheck={(score) => setChecks((c) => ({ ...c, [i]: score }))}
+                onDiscuss={openWithMessage}
+                lessonId={lessonId}
+                blockIndex={i}
+              />
+            </motion.div>
+          ))}
+        </div>
+      </MissionProvider>
 
       <footer className="mt-2 rounded-2xl border border-line bg-bg-raised/60 p-5">
         {error && (

@@ -18,11 +18,11 @@ export default function MasteryGrid({ items }: { items: TrackMastery[] }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.24, ease: EASE, delay: 0.04 * i }}
           data-accent={track.accent}
-          className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-bg-raised/70 p-4 text-center transition-colors duration-150 hover:border-accent/30"
+          className="glow-hover flex flex-col items-center gap-3 rounded-2xl border border-line bg-bg-raised/70 p-4 text-center hover:border-accent/40"
         >
           <ProgressRing value={mastery} size={68} strokeWidth={5} />
           <div className="leading-tight">
-            <p className="text-xs font-medium text-ink">{track.title}</p>
+            <p className="text-sm font-medium text-ink">{track.title}</p>
             <p className="tabular pt-1 text-[11px] text-ink-faint">
               {modulesDone}/{modulesTotal} modules
             </p>
