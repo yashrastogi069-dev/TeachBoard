@@ -82,7 +82,7 @@ New (iteration 5): assignment (real-world homework through grading engine).
 
 ## Iterations (pause for Yash approve/revise after each)
 
-### Iteration 1 — Mission Engine core  [IN PROGRESS]
+### Iteration 1 — Mission Engine core  [DONE 2026-07-10, commit 95a5fd7]
 - lib/blocks.ts: 4 schemas (mission/simulation/reflection/expert-review
   partially landed), union wiring, validateSimulation, scoring, tests.
 - supabase migration mission_runs + RLS.
@@ -391,6 +391,279 @@ approves quality.
 - Whole-project pass: every feature exercised live, tests green, RUN_STATE
   and docs current, commit history clean, pushed. Yash does his own visual
   review; no screenshots delivered.
+
+---
+
+# DETAILED EXECUTION PLAN v2 (2026-07-11) - all remaining work
+
+Authored by Fable at high effort per Yash's request. This section supersedes
+the shorter iteration sketches above for everything NOT yet built. Iterations
+1 and 3 are DONE (commit 95a5fd7, local worktree only, awaiting Yash review
+before merge to master). Order of remaining work, chosen deliberately:
+
+1. Iteration D - Readability + visual energy overhaul (Yash's most recent ask,
+   it makes every later review easier because the platform becomes pleasant
+   to look at while he checks the rest)
+2. Iteration 2 - Flashcards + spaced repetition + daily reminders
+3. Iteration 5b - Drill mode, debate mode, teach-back
+4. Iteration 4 - Tool simulator content (GA4 / SERP on hotspot primitive)
+5. Iteration 5 - Assignments, harder replays, mastery layer
+6. Iteration 6 - Curriculum engine rewrite + sample regeneration
+7. Iteration 7 - Final verification pass
+
+Standing constraints for every iteration below:
+- Fable plans/authors content and reviews at medium effort after every
+  executor agent finishes. Opus/Sonnet xhigh execute. Haiku does doc chores.
+- Executor agents are scoped SMALL (one batch of files each) because this
+  account hit session limits twice on oversized Opus dispatches. Prefer 3
+  small agents over 1 giant one; commit after each batch so nothing is lost.
+- Yash reviews visually at each iteration end (dev server:
+  `cd .claude\worktrees\praxis-build && npm run dev -- -p 3177`). No merge to
+  master until he approves.
+- Every animated thing: useReducedMotion + the brand ease. Every failure
+  path: reportEvent + exact error text in UI. No placeholders. No em dashes.
+
+## Iteration D - Readability + visual energy overhaul  [NEXT UP]
+
+Problem statement (Yash, twice): the platform is "very dark and hard to
+read and not at all interesting". Root causes Fable identified from the
+current tokens and components:
+
+a) Contrast starvation: `--text-muted #b0b0bc` (~7:1 on bg) is fine, but it
+   is used for MOST body copy, and `--text-faint #7c7c88` (~4.2:1, below AA
+   for small text) is used on labels people actually need to read. The page
+   reads as a gray fog with rare white headlines.
+b) Monochrome wash: outside the single track accent, panels are gray boxes
+   on gray. Success/warning/danger tokens exist but appear only on status
+   chips. Nothing draws the eye; everything is the same temperature.
+c) Flat interaction: most cards/rows have no hover response at all (only
+   .glow-hover exists and is rationed to ~4 elements), so the UI feels dead
+   under the cursor.
+
+### D1. Token + global changes (app/globals.css, one Sonnet agent)
+
+- Text ramp brightened one step: `--text #f5f5f8`, `--text-muted #c2c2cf`,
+  `--text-faint #8f8fa0`. Faint is then ONLY legal for decorative labels,
+  never for content someone must read; anything informational moves up to
+  muted. Verify 4.5:1 minimum for muted on bg-raised.
+- New decorative color system, hue-locked per meaning so it never fights
+  the track accent:
+  - `--info` (soft sky blue) + `--info-soft`: neutral informational chips.
+  - Panel icon chips: every dashboard panel title gets a small rounded icon
+    chip whose color rotates through a FIXED assignment (mastery=accent,
+    streak=warning, deadlines=danger, plan=info, scores=success,
+    recommendations=accent-bright, health=success/danger by status).
+    Utility: `.chip-icon` (32px rounded-lg, soft bg, colored duotone icon).
+- Hover language, one recipe used EVERYWHERE interactive (new utilities):
+  - `.card-hover`: on hover -> border-color: var(--border-strong),
+    background steps up one surface layer, translateY(-2px),
+    box-shadow 0 4px 24px rgb(0 0 0 / .35) + faint accent glow at 12%.
+    Transition 160ms ease-brand. Reduced-motion: color/border only, no
+    translate.
+  - `.row-hover`: for list rows: background bg-overlay + inset 2px accent
+    bar on the LEFT is BANNED (impeccable rule), so instead: background
+    tint accent at 6% + text brightens to --text.
+  - `active:scale-[0.98]` stays the press feedback standard.
+- Highlight effects:
+  - `.hl` : inline highlight for key metric words in prose: background
+    accent-soft, small padding, rounded, text accent-bright. Used sparingly
+    (2-3 per lesson view max, curriculum prompt will mark them).
+  - `.glow-breathe`: 3.5s infinite alternate soft glow pulse (opacity of
+    box-shadow only, no layout), applied to exactly TWO elements app-wide:
+    the dashboard "resume where you left off" card and the Copilot button.
+    Disabled under reduced motion.
+- Surface tinting: `.panel-tinted` variant painting a 3% accent wash into
+  panel headers (linear fade to transparent by 40% height) so panels stop
+  being uniformly gray without becoming colored cards.
+- Focus rings, tabular figures, type scale: unchanged (already good).
+- DESIGN.md updated in the same batch to document all of the above.
+
+### D2. Dashboard energy pass (app/(dashboard) + components/dashboard, one Opus agent)
+
+- Apply chip-icon to every panel title; apply card-hover to every panel and
+  clickable card; row-hover to score rows, deadline rows, recommendation
+  rows.
+- Mastery rings: thicken stroke, animate sweep-in on view (0.7s), value in
+  accent-bright instead of plain white, ring track at accent 12%.
+- Weekly activity chart: bars get per-day gradient-free two-tone (accent for
+  done days, border color for empty), today's bar gets glow-accent, hover on
+  a bar shows a tooltip (existing pattern from chart block).
+- Streak counter: warning-family flame styling (Phosphor Fire duotone in a
+  warning chip), count in font-display text-3xl.
+- System Health: status dot pulses (glow-breathe scoped variant) only when
+  status is error; healthy stays calm.
+- Resume card: keeps glow-accent, gains glow-breathe (one of the two allowed).
+- Skill map nodes: hover lifts node + brightens edge to neighbors;
+  current node keeps its glow.
+- Empty states get a duotone Phosphor icon at 40% accent so they are no
+  longer bare text.
+
+### D3. Shell + track + lesson surfaces (one Opus agent)
+
+- Sidebar: active item gets accent-soft fill + accent left icon (fill via
+  background, not border stripe), hover items get row-hover; track switcher
+  entries show their own track accent dot ALWAYS colored (small constant
+  color presence in the chrome); logo keeps glow.
+- Topbar: global-stats popover entries get chip-icons; popover uses
+  bg-elevated + stronger shadow so it separates from the page.
+- Track hub (L1): module cards get card-hover + a per-status color edge
+  treatment via full border tint (locked=faint, available=accent 25%,
+  done=success 25%); progress bars animate width on view (accepted
+  exception); track header gets accent-wash.
+- Module page (L2): lesson list rows get row-hover + status icons colored
+  (done=success CheckCircle duotone, next=accent Play duotone,
+  locked=faint Lock).
+- Lesson player (L3): block containers get a hairline left-aligned type
+  icon header (colored per block family: interactive families in accent,
+  test families in warning, content families neutral) so the lesson stops
+  reading as one long gray column; "Complete lesson" button gains
+  glow-accent-strong; progress rail brightens.
+- Copilot panel: THE one glassmorphism surface (backdrop-blur on
+  bg-overlay/80), plus glow-breathe on its floating button (the second of
+  the two allowed).
+
+### D4. Verification + review gate
+
+- Executor self-verifies on a dev server (3177+), checks reduced-motion via
+  devtools emulation, checks contrast of new muted/faint on all surfaces.
+- Fable medium review of the full diff against this spec.
+- Commit per agent batch (3 commits). Yash visual review closes iteration D.
+
+Acceptance: Yash can read every panel comfortably; every interactive element
+responds to hover; color appears in the chrome, panels, charts, and icons
+without breaking the near-black + one-accent architecture; reduced motion
+still sane; build/tsc/tests green.
+
+## Iteration 2 - Flashcards + spaced repetition + reminders
+
+Design is final in the iteration 2 section above (SM-2-lite math, table
+shape, /review page, cron reminder). Execution detail:
+
+- Batch 1 (Sonnet): `flashcard-deck` zod schema in lib/blocks.ts (id, title,
+  cards 5-30 of {id, front, back, tag?}) + validateFlashcardRefs (unique
+  card ids) + union wiring + tests; migration
+  supabase/migrations/0003_review_state.sql (table per spec above, RLS
+  owner-only, index on (user_id, due_at)); curriculum palette entry with
+  the application-over-recall rule and 2 example cards.
+- Batch 2 (Opus): components/artifacts/FlashcardDeck.tsx: 3D flip on
+  tap/space (transform rotateY, reduced-motion swaps to crossfade), 4 grade
+  buttons (again/hard/good/easy with danger/warning/accent/success soft
+  styling), per-card progress dots, deck summary state. In-lesson grading
+  writes review_state rows via new route POST /api/review (action "grade":
+  computes SM-2-lite next interval server-side; action "queue": returns due
+  cards joined with deck content). Auth, zod-validated, reportEvent on
+  failure.
+- Batch 3 (Opus): app/(dashboard)/review/page.tsx: cross-track due queue,
+  one card at a time, flip + grade, session progress bar, celebratory
+  empty state; sidebar "Review" entry with due-count badge (server
+  component fetch, fail-soft to no badge); dashboard due-count card.
+- Batch 4 (Sonnet): /api/cron/review-reminder (x-cron-key guarded): counts
+  due cards for Yash's user, pushes ntfy "N cards due for revision today"
+  via lib/notify pushNotification, logs to system_events on failure;
+  n8n/ workflow JSON + README row (09:30 daily); Vercel cron entry comment.
+- Fable authors the first real deck content: one deck for the demo SEO
+  lesson (10 cards, application-style) imported via the authoring pipeline.
+
+Acceptance: unchanged from spec above + the demo deck reviewed live.
+
+## Iteration 5b - Drill mode, debate mode, teach-back
+
+Runs BEFORE iteration 4/5 because all three directly serve daily engagement,
+which Yash values most. Execution detail on top of the design above:
+
+- Drill (Opus batch): migration 0004_drill_sessions.sql (id, user_id, date
+  unique per user, items jsonb, score int, weak_tags text[], created_at,
+  RLS owner-only). lib/drill.ts: deterministic sampler that queries
+  progress (mastery < 70), review_state (ease < 2.0), mission_runs (poor
+  decisions), then pulls 5-8 scored blocks out of those lessons' stored
+  content (quiz question, one hotspot region set, one card-match pair set,
+  one single simulation stage). /drill page: rapid-fire runner reusing
+  existing block components in a slim frame, progress bar, streak tie-in
+  (activity_log entry kind "drill"), done-today lock until midnight
+  Pacific/Auckland. Sidebar entry + dashboard "Today's drill" card.
+- Debate (Sonnet batch): tutor route gains mode "debate" (system prompt
+  variant: argue the wrongPosition convincingly, concede only to correct
+  reasoning, drop act after 3-5 exchanges, output scored debrief JSON at
+  the end which the route detects and stores as a scored event). `debate`
+  block schema {id, topic, wrongPosition, keyPoints 3-6, maxExchanges
+  default 4} + Copilot panel toggle chip "Debate me" visible on lesson
+  pages when the lesson has a debate block (or always available generic).
+  Debrief score feeds lesson mastery like other interactive blocks.
+- Teach-back (Sonnet batch): `teach-back` block schema {id, prompt,
+  audience, rubric 3-5 criteria, minWords default 40, maxWords default
+  200}; component with word count, textarea, submit -> /api/grade
+  (existing route, new payload kind "teach-back" reusing the strict rubric
+  grader); per-criterion feedback cards + score; counts toward mastery;
+  curriculum prompt rule: final lesson of every module ends with one.
+- Fable authors: 1 debate block + 1 teach-back block into the demo lesson
+  module, real content.
+
+## Iteration 4 - Tool simulator content
+
+No new schemas (locked above: hotspot primitive + thin visual skins).
+- Fable authors two premium hotspot scenarios: a GA4 "engagement report
+  with 3 planted issues" and a SERP "which results lose clicks and why"
+  (regions, coordinates, explanations, decoys), plus supporting
+  terminal-sim/infographic context blocks, as lesson JSON.
+- Sonnet: optional `skin: "ga4" | "serp" | "plain"` presentation field on
+  hotspot (cosmetic only: chrome frame, font, header strip mimicking the
+  tool) + import + verify. Small batch.
+
+## Iteration 5 - Assignments, harder replays, mastery layer
+
+- `assignment` block schema {id, title, briefMarkdown, deliverable
+  ("text" | "url" | "plan"), rubric 3-6 criteria, dueInDays?} -> submits
+  through the EXISTING grading engine (/api/grade) and attempts history
+  (submissions table). Component shows brief, submission box, past
+  attempts with per-criterion breakdowns.
+- Harder replays: /api/mission action "variant": Fable-designed prompt
+  takes the base simulation block + the learner's weakest decisions and
+  returns a mutated harder simulation JSON (validated against
+  simulationBlock + validateSimulationRefs before accepting; on validation
+  failure retry once then reportEvent). SimulationPlayer gains "Replay
+  harder" CTA after a run; variant runs store variant>=1 in mission_runs.
+  Mastery >= 85 for a lesson with a mission requires beating variant 1.
+- Per-concept mastery model (Fable's weighting, executors implement in
+  lib/mastery.ts, unit-tested): lesson mastery = 0.45 * mission best (base
+  and variant averaged with variant weighted 2x) + 0.25 * scored artifact
+  average + 0.20 * teach-back/assignment average + 0.10 * flashcard
+  retention (retention = clamp(avg ease_factor - 1.3, 0, 1.2) / 1.2 * 100).
+  Missing components redistribute weight proportionally. Dashboard mastery
+  constellation panel (skill-map style nodes per concept, brightness =
+  mastery) + review queue panel; streaks count scored actions, not opens.
+
+## Iteration 6 - Curriculum engine rewrite + sample regeneration
+
+- Fable designs (in-session, before dispatch): the artifact-selection
+  decision table (concept type -> block family), interaction-density rules
+  (mission chain mandatory per lesson, text+analogy <= 20% of blocks, at
+  least 3 distinct interactive families, at least 1 scored non-quiz block,
+  flashcard deck mandatory, final module lesson ends with teach-back), and
+  the validator error taxonomy.
+- Sonnet: implement lib/curriculum.ts v2 prompt + a post-generation
+  composition validator that rejects and regenerates (max 2 retries, then
+  reportEvent + store with warning flag).
+- Regenerate ONE module (first SEO module unless Yash picks another);
+  Fable reviews content quality personally, then Yash reviews; wider
+  regeneration only after his approval.
+- Fable also rewrites the iteration-1 demo lesson content to full Fable
+  quality (flagged debt from when a Sonnet drafted it).
+
+## Iteration 7 - Final verification (Fable, high)
+
+- Exercise every feature live end-to-end on the dev server; npm run build,
+  npm test, tsc all green; RUN_STATE.md, DESIGN.md, AGENTS.md pipeline
+  section current; migrations 0002-0004 listed for Yash's one-time SQL
+  editor paste with exact order; commit history clean.
+- Then Yash's final visual review; on approval: merge ff-only to master,
+  push origin master (never force).
+
+## Open items carried between iterations
+
+- supabase/migrations/0002_mission_runs.sql still needs Yash's one-time
+  paste into the Supabase SQL editor (0003/0004 will join it).
+- Iterations 1+3 sit in commit 95a5fd7 on worktree-praxis-build awaiting
+  Yash's visual review; nothing merged to master yet.
 
 ## Execution protocol
 
