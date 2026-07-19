@@ -688,3 +688,20 @@ No new schemas (locked above: hotspot primitive + thin visual skins).
 - Yash reviews visually himself; agents still self-verify in browser before
   claiming done. No screenshots sent to Yash.
 - Never print .env values. No em dashes in prose for Yash. No placeholders.
+
+## Addendum v3 (2026-07-19): TEACHING.md + chart-xl
+
+Fable authored TEACHING.md: the Praxis Loop (8-beat lesson skeleton),
+density rules, the new `chart-xl` block (19 chart kinds via lazy-loaded
+ECharts, story + probe playable layers, full schema + validator spec),
+the chart-selection decision table with SEO/GEO exemplars, and the final
+flashcard design. Execution slots into the existing iteration order:
+
+- Iteration D runs first, unchanged (batches D1 Sonnet, D2 Opus, D3 Opus).
+- Iteration 2 = TEACHING.md batches X1 (schemas incl. chart-xl +
+  flashcard-deck + 0003 migration), X2 (ChartXLBlock), X3 (flashcard UI +
+  /api/review + /review), X4 (reminder cron). chart-xl rides with the
+  flashcard iteration because both are schema + renderer + palette work.
+- After Iteration 2, priority target is completing the SEO/GEO track
+  end to end (Fable authors every lesson per TEACHING.md; executors
+  import/wire), then iterations 5b, 4, 5, 6, 7 as planned.
