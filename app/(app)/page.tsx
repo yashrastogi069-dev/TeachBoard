@@ -38,7 +38,7 @@ export default async function DashboardPage() {
 
       <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
         <ResumeCard resume={data.resume} startHref={data.startHref} />
-        <ActivityChart days={data.weeklyActivity} />
+        <ActivityChart days={data.weeklyActivity} streakDays={data.streakDays} />
       </div>
 
       {data.skillMap && <SkillMap map={data.skillMap} />}

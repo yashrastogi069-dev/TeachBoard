@@ -4,9 +4,11 @@ import {
   CheckCircle,
   Circle,
   Exam,
+  ListChecks,
 } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import Panel from "@/components/ui/Panel";
+import EmptyState from "@/components/ui/EmptyState";
 import { getTrack } from "@/lib/tracks";
 import type { PlanItem, PlanKind } from "@/lib/seed";
 
@@ -29,12 +31,14 @@ export default function TodayPlan({ items }: { items: PlanItem[] }) {
     <Panel
       title="Today's plan"
       subtitle={`${doneCount} of ${items.length} done. Built from your deadlines and weakest rubric criteria.`}
+      icon={<ListChecks size={18} weight="duotone" />}
+      iconColor="text-info"
     >
       {items.length === 0 && (
-        <p className="rounded-xl border border-line bg-bg/40 p-4 text-xs leading-relaxed text-ink-faint">
+        <EmptyState icon={ListChecks}>
           Nothing scheduled yet. Open a track, finish a lesson, and your plan
           builds itself from deadlines and weak spots.
-        </p>
+        </EmptyState>
       )}
       <ul className="flex flex-col gap-2">
         {items.map((item) => {
@@ -44,7 +48,7 @@ export default function TodayPlan({ items }: { items: PlanItem[] }) {
             <li
               key={item.id}
               data-accent={track?.accent}
-              className="flex items-start gap-3 rounded-xl border border-line bg-bg/40 p-3"
+              className="row-hover flex items-start gap-3 rounded-xl border border-line bg-bg/40 p-3"
             >
               {item.done ? (
                 <CheckCircle
@@ -65,7 +69,7 @@ export default function TodayPlan({ items }: { items: PlanItem[] }) {
                 >
                   {item.label}
                 </p>
-                <p className="flex items-center gap-1.5 pt-1 text-[11px] text-ink-faint">
+                <p className="flex items-center gap-1.5 pt-1 text-[11px] text-ink-muted">
                   <KindIcon size={12} weight="duotone" className="text-accent" />
                   {KIND_LABEL[item.kind]} · {track?.title} · ~{item.estMinutes} min
                 </p>

@@ -16,14 +16,15 @@ export default function MasteryGrid({ items }: { items: TrackMastery[] }) {
           key={track.slug}
           initial={reduce ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
+          whileHover={reduce ? undefined : { y: -2 }}
           transition={{ duration: 0.24, ease: EASE, delay: 0.04 * i }}
           data-accent={track.accent}
-          className="glow-hover flex flex-col items-center gap-3 rounded-2xl border border-line bg-bg-raised/70 p-4 text-center hover:border-accent/40"
+          className="card-hover flex flex-col items-center gap-3 rounded-2xl border border-line bg-bg-raised/70 p-4 text-center"
         >
-          <ProgressRing value={mastery} size={68} strokeWidth={5} />
+          <ProgressRing value={mastery} size={68} strokeWidth={7} />
           <div className="leading-tight">
             <p className="text-sm font-medium text-ink">{track.title}</p>
-            <p className="tabular pt-1 text-[11px] text-ink-faint">
+            <p className="tabular pt-1 text-[11px] text-ink-muted">
               {modulesDone}/{modulesTotal} modules
             </p>
           </div>

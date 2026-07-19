@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "motion/react";
 import {
   Coins,
+  Heartbeat,
   Info,
   PlugsConnected,
   Warning,
@@ -38,11 +39,28 @@ export default function SystemHealth({
   dataSources: DataSource[];
 }) {
   const reduce = useReducedMotion();
+  const hasError = events.some((e) => e.severity === "error");
 
   return (
     <Panel
       title="System health"
       subtitle="Quota usage, AI cost, connected sources, and recent events. Errors also push to your phone via ntfy."
+      icon={<Heartbeat size={18} weight="duotone" />}
+      iconColor={hasError ? "text-danger" : "text-success"}
+      action={
+        <span
+          className={`flex shrink-0 items-center gap-2 rounded-md px-2 py-1 text-[11px] font-medium ${
+            hasError ? "bg-danger/10 text-danger" : "bg-success/10 text-success"
+          }`}
+        >
+          <span
+            className={`size-2 rounded-full ${
+              hasError ? "bg-danger" : "bg-success"
+            } ${hasError && !reduce ? "animate-pulse" : ""}`}
+          />
+          {hasError ? "Errors" : "Healthy"}
+        </span>
+      }
     >
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-3">
@@ -55,7 +73,7 @@ export default function SystemHealth({
               <div key={q.provider} className="leading-tight">
                 <div className="flex items-baseline justify-between pb-1">
                   <span className="text-xs text-ink-muted">{q.provider}</span>
-                  <span className="tabular text-[11px] text-ink-faint">
+                  <span className="tabular text-[11px] text-ink-muted">
                     {q.used.toLocaleString()} / {q.limit.toLocaleString()} {q.unit}{" "}
                     per {q.period}
                   </span>
@@ -106,7 +124,7 @@ export default function SystemHealth({
                 }
               />
               <span className="shrink-0 text-xs text-ink">{src.name}</span>
-              <span className="min-w-0 truncate text-[10px] text-ink-faint">
+              <span className="min-w-0 truncate text-[10px] text-ink-muted">
                 {src.detail}
               </span>
               <span
@@ -141,7 +159,7 @@ export default function SystemHealth({
                       <span className="rounded bg-bg-overlay px-1.5 py-0.5 font-mono text-[10px] text-ink-muted">
                         {evt.source}
                       </span>
-                      <span className="text-[11px] text-ink-faint">
+                      <span className="text-[11px] text-ink-muted">
                         {evt.occurredLabel}
                       </span>
                     </p>

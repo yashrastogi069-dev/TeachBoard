@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import { CheckCircle, Crosshair, Flag, Lock } from "@phosphor-icons/react";
+import { CheckCircle, Crosshair, Flag, Lock, Path } from "@phosphor-icons/react";
 import Panel from "@/components/ui/Panel";
 import { getTrack } from "@/lib/tracks";
 import type { SkillMap as SkillMapData, SkillNode } from "@/lib/seed";
@@ -63,6 +63,8 @@ export default function SkillMap({ map }: { map: SkillMapData }) {
       <Panel
         title="Skill progress map"
         subtitle={`${track?.title}: ${doneCount} of ${map.nodes.length} modules mastered. The lit path is where you are.`}
+        icon={<Path size={18} weight="duotone" />}
+        iconColor="text-accent"
         action={
           <span className="rounded-md bg-accent-soft px-2 py-1 text-[11px] font-medium text-accent-bright">
             {track?.title}

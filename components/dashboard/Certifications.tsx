@@ -1,8 +1,9 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import { Hourglass, Medal } from "@phosphor-icons/react";
+import { Certificate, Hourglass, Medal } from "@phosphor-icons/react";
 import Panel from "@/components/ui/Panel";
+import EmptyState from "@/components/ui/EmptyState";
 import type { Certification } from "@/lib/seed";
 
 const EASE: [number, number, number, number] = [0.23, 1, 0.32, 1];
@@ -14,11 +15,13 @@ export default function Certifications({ items }: { items: Certification[] }) {
     <Panel
       title="Certifications"
       subtitle="External certificates your tracks prepare you for. Earned badges will appear here."
+      icon={<Certificate size={18} weight="duotone" />}
+      iconColor="text-warning"
     >
       {items.length === 0 && (
-        <p className="rounded-xl border border-line bg-bg/40 p-4 text-xs leading-relaxed text-ink-faint">
+        <EmptyState icon={Certificate}>
           All planned certifications are earned, or none are set up yet.
-        </p>
+        </EmptyState>
       )}
       <ul className="flex flex-col gap-2">
         {items.map((cert, i) => (
@@ -48,7 +51,7 @@ export default function Certifications({ items }: { items: Certification[] }) {
                   </span>
                 )}
               </div>
-              <p className="pt-0.5 text-[11px] text-ink-faint">
+              <p className="pt-0.5 text-[11px] text-ink-muted">
                 {cert.provider} ·{" "}
                 {cert.status === "in_progress" ? "in progress" : "planned"}
               </p>

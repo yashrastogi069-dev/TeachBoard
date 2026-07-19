@@ -1,7 +1,9 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import { Exam } from "@phosphor-icons/react";
 import Panel from "@/components/ui/Panel";
+import EmptyState from "@/components/ui/EmptyState";
 import { getTrack } from "@/lib/tracks";
 import type { RecentScore } from "@/lib/seed";
 
@@ -14,12 +16,14 @@ export default function RecentScores({ items }: { items: RecentScore[] }) {
     <Panel
       title="Latest graded work"
       subtitle="Strict rubric scores. Anything under 70 gets a remediation plan."
+      icon={<Exam size={18} weight="duotone" />}
+      iconColor="text-success"
     >
       {items.length === 0 && (
-        <p className="rounded-xl border border-line bg-bg/40 p-4 text-xs leading-relaxed text-ink-faint">
+        <EmptyState icon={Exam}>
           No graded work yet. Your first practical test result lands here with
           its full rubric breakdown.
-        </p>
+        </EmptyState>
       )}
       <ul className="flex flex-col gap-3">
         {items.map((s, i) => {
@@ -28,7 +32,11 @@ export default function RecentScores({ items }: { items: RecentScore[] }) {
           const tone =
             pct >= 80 ? "text-success" : pct >= 70 ? "text-ink" : "text-warning";
           return (
-            <li key={s.id} data-accent={track?.accent} className="leading-tight">
+            <li
+              key={s.id}
+              data-accent={track?.accent}
+              className="row-hover -mx-2 rounded-lg px-2 py-1.5 leading-tight"
+            >
               <div className="flex items-baseline justify-between gap-3 pb-1.5">
                 <p className="min-w-0 truncate text-xs text-ink">{s.assessment}</p>
                 <p className={`tabular shrink-0 text-sm font-semibold ${tone}`}>
@@ -46,7 +54,7 @@ export default function RecentScores({ items }: { items: RecentScore[] }) {
                   className="h-full rounded-full bg-accent"
                 />
               </div>
-              <p className="pt-1.5 text-[11px] text-ink-faint">
+              <p className="pt-1.5 text-[11px] text-ink-muted">
                 {track?.title} · graded {s.gradedLabel}
               </p>
             </li>

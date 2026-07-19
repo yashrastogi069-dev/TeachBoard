@@ -24,7 +24,7 @@ export default function ResumeCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.28, ease: EASE }}
       data-accent={track?.accent}
-      className="relative overflow-hidden rounded-2xl border border-accent/25 bg-bg-raised/70 p-5"
+      className="glow-breathe relative overflow-hidden rounded-2xl border border-accent/25 bg-bg-raised/70 p-5"
       style={{ boxShadow: "0 0 48px -18px var(--accent-glow)" }}
     >
       <div

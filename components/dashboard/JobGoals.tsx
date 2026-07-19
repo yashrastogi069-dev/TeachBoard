@@ -1,7 +1,9 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import { Target } from "@phosphor-icons/react";
 import Panel from "@/components/ui/Panel";
+import EmptyState from "@/components/ui/EmptyState";
 import { getTrack } from "@/lib/tracks";
 import type { JobGoal } from "@/lib/seed";
 
@@ -14,11 +16,13 @@ export default function JobGoals({ goals }: { goals: JobGoal[] }) {
     <Panel
       title="Skill goals · job roles"
       subtitle="Readiness for the roles you are targeting, weighted from linked track mastery."
+      icon={<Target size={18} weight="duotone" />}
+      iconColor="text-accent"
     >
       {goals.length === 0 && (
-        <p className="rounded-xl border border-line bg-bg/40 p-4 text-xs leading-relaxed text-ink-faint">
+        <EmptyState icon={Target}>
           Job goals appear once the database is connected.
-        </p>
+        </EmptyState>
       )}
       <ul className="flex flex-col gap-4">
         {goals.map((goal, i) => (
@@ -40,7 +44,7 @@ export default function JobGoals({ goals }: { goals: JobGoal[] }) {
                 className="h-full rounded-full bg-accent"
               />
             </div>
-            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-1.5 text-[11px] text-ink-faint">
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-1.5 text-[11px] text-ink-muted">
               built from
               {goal.linkedTrackSlugs.map((slug) => {
                 const track = getTrack(slug);

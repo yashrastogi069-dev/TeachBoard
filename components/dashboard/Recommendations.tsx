@@ -2,9 +2,11 @@ import {
   ArrowCircleRight,
   ArrowCounterClockwise,
   PlayCircle,
+  Sparkle,
 } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import Panel from "@/components/ui/Panel";
+import EmptyState from "@/components/ui/EmptyState";
 import { getTrack } from "@/lib/tracks";
 import type { Recommendation } from "@/lib/seed";
 
@@ -19,12 +21,14 @@ export default function Recommendations({ items }: { items: Recommendation[] }) 
     <Panel
       title="Professor's recommendations"
       subtitle="Generated from your rubric gaps and pace, refreshed after every graded test."
+      icon={<Sparkle size={18} weight="duotone" />}
+      iconColor="text-accent-bright"
     >
       {items.length === 0 && (
-        <p className="rounded-xl border border-line bg-bg/40 p-4 text-xs leading-relaxed text-ink-faint">
+        <EmptyState icon={Sparkle}>
           The Professor recommends things after grading your work. Take a
           practical test and this fills up.
-        </p>
+        </EmptyState>
       )}
       <ul className="flex flex-col gap-2">
         {items.map((rec) => {
@@ -35,7 +39,7 @@ export default function Recommendations({ items }: { items: Recommendation[] }) 
             <li
               key={rec.id}
               data-accent={track?.accent}
-              className="flex items-start gap-3 rounded-xl border border-line bg-bg/40 p-3"
+              className="row-hover flex items-start gap-3 rounded-xl border border-line bg-bg/40 p-3"
             >
               <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-md bg-accent-soft text-accent">
                 <KindIcon size={14} weight="duotone" />
