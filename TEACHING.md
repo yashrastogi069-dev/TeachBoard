@@ -214,7 +214,62 @@ a chart-xl with a probe.
 
 ---
 
-## 5. Execution order for this spec (see PLAN.md v3 addendum)
+## 5. Typography and readability directive (Fable, 2026-07-19)
+
+Diagnosis: the numeric type scale in app/globals.css is already fine (17px
+base, 1.7 line-height, a real --text-4xl..--text-xs ramp, Space Grotesk
+loaded for display type). The readability failure is a USAGE problem, not
+a token problem: the shell alone (Sidebar, Topbar, Copilot) has 18
+occurrences of text-xs/text-sm/text-faint on primary chrome that a user
+reads constantly (nav labels, section headers, popover content). Small
+plus faint plus muted-on-muted is why it reads as "very bad, can't stay
+there." Fixing this is a component-usage sweep, not a new token pass.
+
+Binding rules for the D3 typography sweep:
+
+- **Nav and chrome primary labels** (sidebar track names, top-level nav
+  items, topbar popover headings): minimum --text-base (17px), --text
+  color (not muted, not faint). Only true secondary metadata under a
+  primary label (e.g. a module count under a track name) may drop to
+  --text-sm at --text-muted.
+  - Sidebar.tsx: this file has 7 of the 18 small/faint hits. Track names
+    and nav item labels move to --text-base/--text; keep --text-sm only
+    for the small badge/count text next to a label, and that badge text
+    must be --text-muted, never --text-faint.
+  - Topbar.tsx and Copilot.tsx: same rule. Copilot's own chat bubbles are
+    body copy and must be --text-base with 1.6-1.7 line-height, not
+    text-sm; only timestamps/meta rows may be --text-sm --text-muted.
+- **Headings must step, not cluster.** Every page needs a visible size
+  jump between page title (--text-2xl or --text-3xl, font-display,
+  tracking -0.012em via .font-display), section heading (--text-xl,
+  font-display), and panel/card title (--text-lg, font-sans, weight
+  600). If two adjacent heading levels render at the same visual size,
+  that is the bug to fix, not a stylistic choice.
+- **Body/reading copy** (lesson text blocks, analogy blocks, assignment
+  briefs, tutor messages): always --text-base or larger, 1.7 line-height,
+  max-width in the 65-75ch range (`max-width: 68ch` utility if none
+  exists yet). Never --text-sm for anything the user is meant to read
+  start-to-finish.
+- **--text-faint is decorative-only** (D1 already wrote this rule into
+  DESIGN.md): timestamps that don't matter, divider labels, disabled
+  states. If a faint-colored string carries information the user needs
+  to act on (a due date, a score, a status word), it is --text-muted or
+  --text at minimum. Audit every existing --text-faint / text-faint
+  usage against this test during D3, not just the dashboard.
+- **Weight does real work.** Use font-weight 600 for anything meant to
+  anchor a scan (titles, key numbers, active nav item), 500 for
+  secondary labels, 400 for body prose. Don't rely on color alone to
+  separate emphasis levels.
+- **text-wrap: balance** on all h1-h3, **text-wrap: pretty** on prose
+  blocks over two lines (both cheap CSS, no motion cost).
+- Apply `.tabular` (already exists) to every metric/number that updates
+  or sits in a list, so digits don't jitter the layout.
+
+This directive supersedes any executor judgment call on font sizing for
+the rest of Iteration D; when in doubt, pick the larger size and the
+brighter color.
+
+## 6. Execution order for this spec (see PLAN.md v3 addendum)
 
 - Batch X1 (Sonnet): chart-xl schema + validators + tests; flashcard-deck
   schema + validators + tests; migration 0003_review_state.sql; palette
