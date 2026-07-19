@@ -705,3 +705,25 @@ flashcard design. Execution slots into the existing iteration order:
 - After Iteration 2, priority target is completing the SEO/GEO track
   end to end (Fable authors every lesson per TEACHING.md; executors
   import/wire), then iterations 5b, 4, 5, 6, 7 as planned.
+
+### Iteration D addendum (2026-07-19): typography/readability is a hard requirement
+
+Yash flagged current readability as "very bad, cannot stay there" and asked
+for fonts, sizes, and readability fixed using design skills (impeccable,
+ui-ux-pro-max, emilkowal-animations, design-taste-frontend). D1 fixed
+contrast tokens only; D3 must include a real typography pass, not just
+color/hover work:
+
+- Audit and fix font-size/weight hierarchy across sidebar, topbar, track
+  hub, module list, lesson player, Copilot panel: headings must be
+  visually distinct steps (not all clustered at text-sm/base), body copy
+  stays at --text-base (17px/1.7) or larger, never below --text-sm for
+  primary reading content.
+- Cap prose measure at 65-75ch on lesson/reading blocks.
+- Ensure every text color usage that carries real information reads at
+  AA contrast against its surface (spot-check with the D1 brighter ramp;
+  where --text-faint is still used for a readable label, promote to
+  --text-muted per the decorative-only rule).
+- Use text-wrap: balance on headings, text-wrap: pretty on long prose.
+- If the D2 dashboard batch left weak type hierarchy on dashboard panels,
+  fix it as part of D3's sweep too.
