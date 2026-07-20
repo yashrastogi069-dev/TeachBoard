@@ -3,8 +3,10 @@ import {
   cardMatchBlock,
   cardSortBlock,
   chartAdvancedBlock,
+  chartXlBlock,
   expertReviewBlock,
   financialStatementBlock,
+  flashcardDeckBlock,
   frameworkCanvasBlock,
   graphDiagramBlock,
   hotspotBlock,
@@ -16,6 +18,7 @@ import {
   reflectionBlock,
   scoreCardMatch,
   scoreCardSort,
+  scoreChartXlProbe,
   scoreHotspot,
   scoreQuiz,
   scoreSimulation,
@@ -26,7 +29,9 @@ import {
   treeMapBlock,
   validateCardMatchRefs,
   validateChartAdvancedRefs,
+  validateChartXlRefs,
   validateFinancialStatementRefs,
+  validateFlashcardRefs,
   validateFrameworkCanvasRefs,
   validateGraphDiagramRefs,
   validateHotspotRefs,
@@ -1546,6 +1551,715 @@ describe("lessonContentSchema with infographic and hotspot", () => {
       expect(
         parsed.error.issues.some((issue) => issue.message.includes("at least 1 decoy region"))
       ).toBe(true);
+    }
+  });
+});
+
+/*
+  Batch X1 (TEACHING.md section 2 + 4): tests for chart-xl (the full ECharts
+  catalog) and flashcard-deck (the spaced-repetition "Retain" beat), plus
+  their validate*Refs helpers and chart-xl's probe scoring bands.
+*/
+
+describe("chart-xl block: cartesian family (bar/stacked-bar/line/area)", () => {
+  const bar = {
+    type: "chart-xl" as const,
+    id: "traffic-by-channel",
+    title: "Organic vs paid sessions by month",
+    kind: "bar" as const,
+    unit: "sessions",
+    caption: "Organic sessions overtook paid in March.",
+    cartesian: {
+      categories: ["Jan", "Feb", "Mar"],
+      series: [
+        { name: "Organic", values: [1200, 1400, 2100] },
+        { name: "Paid", values: [1800, 1700, 1600] },
+      ],
+    },
+    probe: {
+      question: "In which month did organic overtake paid?",
+      options: [
+        { id: "jan", label: "January", correct: false },
+        { id: "mar", label: "March", correct: true },
+      ],
+      explain: "Organic sessions (2100) exceeded paid (1600) for the first time in March.",
+    },
+  };
+
+  it("accepts a valid bar chart with a probe", () => {
+    const parsed = chartXlBlock.parse(bar);
+    expect(validateChartXlRefs(parsed)).toEqual([]);
+  });
+
+  it("accepts stacked-bar/line/area kinds with the same cartesian payload shape", () => {
+    (["stacked-bar", "line", "area"] as const).forEach((kind) => {
+      const parsed = chartXlBlock.parse({ ...bar, kind, id: `${bar.id}-${kind}` });
+      expect(validateChartXlRefs(parsed)).toEqual([]);
+    });
+  });
+
+  it("rejects a cartesian series whose values length does not match categories", () => {
+    const broken = chartXlBlock.parse({
+      ...bar,
+      cartesian: {
+        categories: ["Jan", "Feb", "Mar"],
+        series: [{ name: "Organic", values: [1200, 1400] }],
+      },
+    });
+    const problems = validateChartXlRefs(broken);
+    expect(problems.some((p) => p.includes('series "Organic" has 2 value(s) but there are 3 categories'))).toBe(
+      true
+    );
+  });
+
+  it("rejects a bar chart missing its required cartesian payload", () => {
+    const broken = chartXlBlock.parse({ ...bar, cartesian: undefined });
+    const problems = validateChartXlRefs(broken);
+    expect(problems.some((p) => p.includes('requires the "cartesian" payload'))).toBe(true);
+  });
+
+  it("rejects a bar chart carrying an extra payload not matching its kind", () => {
+    const broken = chartXlBlock.parse({
+      ...bar,
+      parts: { items: [{ name: "A", value: 1 }, { name: "B", value: 2 }] },
+    });
+    const problems = validateChartXlRefs(broken);
+    expect(problems.some((p) => p.includes('must not include the "parts" payload'))).toBe(true);
+  });
+});
+
+describe("chart-xl block: points family (scatter/bubble)", () => {
+  const scatter = {
+    type: "chart-xl" as const,
+    id: "difficulty-vs-volume",
+    title: "Keyword difficulty vs search volume",
+    kind: "scatter" as const,
+    unit: "",
+    caption: "High-volume keywords cluster at high difficulty too.",
+    points: {
+      series: [
+        {
+          name: "Target keywords",
+          points: [
+            { x: 40, y: 2000, label: "seo audit" },
+            { x: 65, y: 8000, label: "technical seo" },
+          ],
+        },
+      ],
+    },
+    story: { steps: [{ text: "Notice the cluster in the top-right corner." }] },
+  };
+
+  it("accepts a valid scatter chart with a story", () => {
+    const parsed = chartXlBlock.parse(scatter);
+    expect(validateChartXlRefs(parsed)).toEqual([]);
+  });
+
+  it("accepts bubble kind reusing the points payload with a size field", () => {
+    const bubble = {
+      ...scatter,
+      kind: "bubble" as const,
+      points: {
+        series: [
+          {
+            name: "Channels",
+            points: [{ x: 5000, y: 400, size: 20, label: "Paid search" }],
+          },
+        ],
+      },
+    };
+    const parsed = chartXlBlock.parse(bubble);
+    expect(validateChartXlRefs(parsed)).toEqual([]);
+  });
+});
+
+describe("chart-xl block: candles family (candlestick)", () => {
+  const candlestick = {
+    type: "chart-xl" as const,
+    id: "rank-volatility",
+    title: "Weekly rank high/low during an algorithm update",
+    kind: "candlestick" as const,
+    unit: "position",
+    caption: "Rankings whipsawed hardest in week 3.",
+    candles: {
+      categories: ["Wk1", "Wk2", "Wk3"],
+      values: [
+        [5, 6, 4, 7],
+        [6, 8, 5, 9],
+        [8, 4, 3, 10],
+      ],
+    },
+    probe: {
+      question: "Which week shows the widest high/low range?",
+      options: [
+        { id: "w1", label: "Week 1", correct: false },
+        { id: "w3", label: "Week 3", correct: true },
+      ],
+      explain: "Week 3 ranges from position 3 to 10, the widest spread.",
+    },
+  };
+
+  it("accepts a valid candlestick chart", () => {
+    const parsed = chartXlBlock.parse(candlestick);
+    expect(validateChartXlRefs(parsed)).toEqual([]);
+  });
+
+  it("rejects candles whose values length does not match categories", () => {
+    const broken = chartXlBlock.parse({
+      ...candlestick,
+      candles: { categories: ["Wk1", "Wk2", "Wk3"], values: [[5, 6, 4, 7]] },
+    });
+    const problems = validateChartXlRefs(broken);
+    expect(problems.some((p) => p.includes("candles has 1 value row(s) but 3 categories"))).toBe(true);
+  });
+});
+
+describe("chart-xl block: parts family (pie/donut/funnel/wordcloud)", () => {
+  const pie = {
+    type: "chart-xl" as const,
+    id: "traffic-mix",
+    title: "Traffic mix by acquisition channel",
+    kind: "pie" as const,
+    unit: "%",
+    caption: "Organic drives more than half of all sessions.",
+    parts: {
+      items: [
+        { name: "Organic", value: 55 },
+        { name: "Paid", value: 30 },
+        { name: "Referral", value: 15 },
+      ],
+    },
+    probe: {
+      question: "Which channel drives the most traffic?",
+      options: [
+        { id: "organic", label: "Organic", correct: true },
+        { id: "paid", label: "Paid", correct: false },
+      ],
+      explain: "Organic is 55% of the mix, the largest single slice.",
+    },
+  };
+
+  it("accepts a valid pie chart", () => {
+    const parsed = chartXlBlock.parse(pie);
+    expect(validateChartXlRefs(parsed)).toEqual([]);
+  });
+
+  it("accepts donut/funnel/wordcloud kinds with the same parts payload shape", () => {
+    (["donut", "funnel", "wordcloud"] as const).forEach((kind) => {
+      const parsed = chartXlBlock.parse({ ...pie, kind, id: `${pie.id}-${kind}` });
+      expect(validateChartXlRefs(parsed)).toEqual([]);
+    });
+  });
+});
+
+describe("chart-xl block: radar family", () => {
+  const radar = {
+    type: "chart-xl" as const,
+    id: "eeat-comparison",
+    title: "E-E-A-T dimensions of two competing pages",
+    kind: "radar" as const,
+    unit: "",
+    caption: "Page A leads on authority but trails on experience.",
+    radar: {
+      axes: [
+        { name: "Experience", max: 10 },
+        { name: "Expertise", max: 10 },
+        { name: "Authority", max: 10 },
+      ],
+      series: [
+        { name: "Page A", values: [4, 7, 9] },
+        { name: "Page B", values: [8, 6, 5] },
+      ],
+    },
+    story: { steps: [{ text: "Page A dominates authority.", focus: "Authority" }] },
+  };
+
+  it("accepts a valid radar chart whose story focus resolves to a real axis", () => {
+    const parsed = chartXlBlock.parse(radar);
+    expect(validateChartXlRefs(parsed)).toEqual([]);
+  });
+
+  it("rejects a radar series whose values length does not match the axes count", () => {
+    const broken = chartXlBlock.parse({
+      ...radar,
+      radar: { ...radar.radar, series: [{ name: "Page A", values: [4, 7] }] },
+    });
+    const problems = validateChartXlRefs(broken);
+    expect(problems.some((p) => p.includes('series "Page A" has 2 value(s) but there are 3 axes'))).toBe(true);
+  });
+});
+
+describe("chart-xl block: tree family (sunburst/treemap)", () => {
+  const sunburst = {
+    type: "chart-xl" as const,
+    id: "query-intent",
+    title: "Query intent taxonomy",
+    kind: "sunburst" as const,
+    unit: "",
+    caption: "Informational queries dominate the taxonomy.",
+    tree: {
+      nodes: [
+        {
+          name: "Informational",
+          value: 60,
+          children: [{ name: "How-to", value: 40 }, { name: "Definition", value: 20 }],
+        },
+        { name: "Transactional", value: 40 },
+      ],
+    },
+    probe: {
+      question: "Which top-level intent has the most volume?",
+      options: [
+        { id: "info", label: "Informational", correct: true },
+        { id: "trans", label: "Transactional", correct: false },
+      ],
+      explain: "Informational (60) outweighs Transactional (40).",
+    },
+  };
+
+  it("accepts a valid sunburst chart within the depth limit", () => {
+    const parsed = chartXlBlock.parse(sunburst);
+    expect(validateChartXlRefs(parsed)).toEqual([]);
+  });
+
+  it("accepts treemap kind with the same tree payload shape", () => {
+    const parsed = chartXlBlock.parse({ ...sunburst, kind: "treemap" as const, id: "content-inventory" });
+    expect(validateChartXlRefs(parsed)).toEqual([]);
+  });
+
+  it("rejects a tree payload nested more than 4 levels deep", () => {
+    const tooDeep = chartXlBlock.parse({
+      ...sunburst,
+      tree: {
+        nodes: [
+          {
+            name: "L1",
+            children: [{ name: "L2", children: [{ name: "L3", children: [{ name: "L4", children: [{ name: "L5" }] }] }] }],
+          },
+        ],
+      },
+    });
+    const problems = validateChartXlRefs(tooDeep);
+    expect(problems.some((p) => p.includes("must be at most 4"))).toBe(true);
+  });
+});
+
+describe("chart-xl block: flow family (sankey/graph)", () => {
+  const sankey = {
+    type: "chart-xl" as const,
+    id: "crawl-budget-flow",
+    title: "Crawl budget flow through site sections",
+    kind: "sankey" as const,
+    unit: "crawls",
+    caption: "Most crawl budget flows to faceted URLs, not content.",
+    flow: {
+      nodes: [
+        { id: "total", label: "Total crawl budget" },
+        { id: "faceted", label: "Faceted URLs" },
+        { id: "content", label: "Content pages" },
+      ],
+      links: [
+        { from: "total", to: "faceted", value: 700 },
+        { from: "total", to: "content", value: 300 },
+      ],
+    },
+    probe: {
+      question: "Where does most crawl budget go?",
+      options: [
+        { id: "faceted", label: "Faceted URLs", correct: true },
+        { id: "content", label: "Content pages", correct: false },
+      ],
+      explain: "700 of 1000 crawl hits go to faceted URLs.",
+    },
+  };
+
+  it("accepts a valid sankey chart", () => {
+    const parsed = chartXlBlock.parse(sankey);
+    expect(validateChartXlRefs(parsed)).toEqual([]);
+  });
+
+  it("accepts graph kind with the same flow payload shape, self-links allowed", () => {
+    const graph = {
+      ...sankey,
+      kind: "graph" as const,
+      id: "internal-link-graph",
+      flow: {
+        nodes: sankey.flow.nodes,
+        links: [...sankey.flow.links, { from: "total", to: "total", value: 1 }],
+      },
+    };
+    const parsed = chartXlBlock.parse(graph);
+    expect(validateChartXlRefs(parsed)).toEqual([]);
+  });
+
+  it("rejects a flow link referencing an unknown node", () => {
+    const broken = chartXlBlock.parse({
+      ...sankey,
+      flow: { ...sankey.flow, links: [{ from: "total", to: "ghost", value: 100 }] },
+    });
+    const problems = validateChartXlRefs(broken);
+    expect(problems.some((p) => p.includes('references unknown node "ghost"'))).toBe(true);
+  });
+
+  it("rejects a sankey self-link", () => {
+    const broken = chartXlBlock.parse({
+      ...sankey,
+      flow: { ...sankey.flow, links: [{ from: "total", to: "total", value: 100 }] },
+    });
+    const problems = validateChartXlRefs(broken);
+    expect(problems.some((p) => p.includes("self-link"))).toBe(true);
+  });
+});
+
+describe("chart-xl block: river family (themeriver)", () => {
+  const river = {
+    type: "chart-xl" as const,
+    id: "topic-share",
+    title: "Topic share of search demand across the year",
+    kind: "themeriver" as const,
+    unit: "%",
+    caption: "AI search overtook classic SEO topics by Q4.",
+    river: {
+      series: ["Classic SEO", "AI Search"],
+      points: [
+        { date: "Jan", series: "Classic SEO", value: 70 },
+        { date: "Jan", series: "AI Search", value: 30 },
+        { date: "Dec", series: "Classic SEO", value: 35 },
+        { date: "Dec", series: "AI Search", value: 65 },
+      ],
+    },
+    story: { steps: [{ text: "Watch the AI Search band widen toward December.", focus: "AI Search" }] },
+  };
+
+  it("accepts a valid themeriver chart", () => {
+    const parsed = chartXlBlock.parse(river);
+    expect(validateChartXlRefs(parsed)).toEqual([]);
+  });
+
+  it("rejects a river point referencing a series not declared in series[]", () => {
+    const broken = chartXlBlock.parse({
+      ...river,
+      river: { ...river.river, points: [...river.river.points, { date: "Jan", series: "Voice Search", value: 10 }] },
+    });
+    const problems = validateChartXlRefs(broken);
+    expect(problems.some((p) => p.includes('references unknown series "Voice Search"'))).toBe(true);
+  });
+});
+
+describe("chart-xl block: grid family (heatmap)", () => {
+  const heatmap = {
+    type: "chart-xl" as const,
+    id: "ctr-by-position-device",
+    title: "CTR by SERP position and device",
+    kind: "heatmap" as const,
+    unit: "%",
+    caption: "Position 1 on mobile has the hottest CTR.",
+    grid: {
+      rowLabels: ["Position 1", "Position 2"],
+      colLabels: ["Mobile", "Desktop"],
+      values: [
+        [28, 22],
+        [15, 12],
+      ],
+    },
+    probe: {
+      question: "Which cell has the highest CTR?",
+      options: [
+        { id: "p1-mobile", label: "Position 1, Mobile", correct: true },
+        { id: "p2-desktop", label: "Position 2, Desktop", correct: false },
+      ],
+      explain: "28% at Position 1 on mobile is the highest value in the grid.",
+    },
+  };
+
+  it("accepts a valid heatmap with matching row/col dimensions", () => {
+    const parsed = chartXlBlock.parse(heatmap);
+    expect(validateChartXlRefs(parsed)).toEqual([]);
+  });
+
+  it("rejects a heatmap with a mismatched row count", () => {
+    const broken = chartXlBlock.parse({
+      ...heatmap,
+      grid: { ...heatmap.grid, values: [[28, 22]] },
+    });
+    const problems = validateChartXlRefs(broken);
+    expect(problems.some((p) => p.includes("has 1 value row(s) but 2 rowLabel(s)"))).toBe(true);
+  });
+
+  it("rejects a heatmap row with a mismatched column count", () => {
+    const broken = chartXlBlock.parse({
+      ...heatmap,
+      grid: { ...heatmap.grid, values: [[28, 22], [15]] },
+    });
+    const problems = validateChartXlRefs(broken);
+    expect(problems.some((p) => p.includes("row 1 has 1 value(s) but there are 2 colLabel(s)"))).toBe(true);
+  });
+});
+
+describe("chart-xl block: tasks family (gantt)", () => {
+  const gantt = {
+    type: "chart-xl" as const,
+    id: "sprint-plan",
+    title: "90-day SEO sprint plan",
+    kind: "gantt" as const,
+    unit: "days",
+    caption: "The technical audit must finish before content work starts.",
+    tasks: {
+      items: [
+        { label: "Technical audit", start: 0, end: 14, group: "Technical" },
+        { label: "Content gap analysis", start: 14, end: 45, group: "Content" },
+      ],
+    },
+    story: { steps: [{ text: "Technical audit runs first.", focus: "Technical audit" }] },
+  };
+
+  it("accepts a valid gantt chart", () => {
+    const parsed = chartXlBlock.parse(gantt);
+    expect(validateChartXlRefs(parsed)).toEqual([]);
+  });
+
+  it("rejects a gantt item whose end is not after its start", () => {
+    const broken = chartXlBlock.parse({
+      ...gantt,
+      tasks: { items: [{ label: "Technical audit", start: 14, end: 14 }] },
+    });
+    const problems = validateChartXlRefs(broken);
+    expect(problems.some((p) => p.includes("must have end > start"))).toBe(true);
+  });
+});
+
+describe("chart-xl block: story/probe density rules", () => {
+  const base = {
+    type: "chart-xl" as const,
+    id: "base-chart",
+    title: "Traffic by channel",
+    kind: "bar" as const,
+    unit: "sessions",
+    caption: "Organic leads every month.",
+    cartesian: {
+      categories: ["Jan", "Feb"],
+      series: [{ name: "Organic", values: [100, 200] }],
+    },
+  };
+
+  it("rejects a chart with neither story nor probe", () => {
+    const broken = chartXlBlock.parse(base);
+    const problems = validateChartXlRefs(broken);
+    expect(problems.some((p) => p.includes('requires at least one of "story" or "probe"'))).toBe(true);
+  });
+
+  it("rejects a story whose focus does not resolve to a real payload name", () => {
+    const broken = chartXlBlock.parse({
+      ...base,
+      story: { steps: [{ text: "Look here.", focus: "Paid" }] },
+    });
+    const problems = validateChartXlRefs(broken);
+    expect(problems.some((p) => p.includes('focus "Paid" does not resolve'))).toBe(true);
+  });
+
+  it("rejects a probe with zero correct options", () => {
+    const broken = chartXlBlock.parse({
+      ...base,
+      probe: {
+        question: "Which month is higher?",
+        options: [
+          { id: "jan", label: "January", correct: false },
+          { id: "feb", label: "February", correct: false },
+        ],
+        explain: "February is higher.",
+      },
+    });
+    const problems = validateChartXlRefs(broken);
+    expect(problems.some((p) => p.includes("exactly one option with correct true (found 0)"))).toBe(true);
+  });
+
+  it("rejects a probe with more than one correct option", () => {
+    const broken = chartXlBlock.parse({
+      ...base,
+      probe: {
+        question: "Which month is higher?",
+        options: [
+          { id: "jan", label: "January", correct: true },
+          { id: "feb", label: "February", correct: true },
+        ],
+        explain: "February is higher.",
+      },
+    });
+    const problems = validateChartXlRefs(broken);
+    expect(problems.some((p) => p.includes("exactly one option with correct true (found 2)"))).toBe(true);
+  });
+
+  it("rejects fewer than 4 blocks / missing caption at the zod level", () => {
+    const parsed = chartXlBlock.safeParse({ ...base, caption: undefined });
+    expect(parsed.success).toBe(false);
+  });
+});
+
+describe("scoreChartXlProbe", () => {
+  it("scores 100 for a correct first try", () => {
+    expect(scoreChartXlProbe("correct-first-try")).toBe(100);
+  });
+
+  it("scores 60 for a correct retry", () => {
+    expect(scoreChartXlProbe("correct-retry")).toBe(60);
+  });
+
+  it("scores 20 for a revealed answer", () => {
+    expect(scoreChartXlProbe("revealed")).toBe(20);
+  });
+});
+
+describe("flashcard-deck block", () => {
+  const deck = {
+    type: "flashcard-deck" as const,
+    id: "seo-basics-deck",
+    title: "SEO fundamentals recall",
+    cards: [
+      {
+        id: "c1",
+        front: "Client's blog has 300 thin tag pages. Index or noindex?",
+        back: "Noindex them: thin, near-duplicate tag pages waste crawl budget without adding ranking value.",
+      },
+      {
+        id: "c2",
+        front: "A migration drops organic traffic 40% overnight. First check?",
+        back: "Compare the old and new URL structures for missing 301 redirects before anything else.",
+      },
+      {
+        id: "c3",
+        front: "What does a canonical tag do?",
+        back: "It tells search engines which URL is the preferred version among duplicates.",
+        tag: "definitions",
+      },
+      {
+        id: "c4",
+        front: "Two pages target the same keyword and cannibalize rankings. Fix?",
+        back: "Consolidate into one page and 301 redirect the weaker page, or differentiate intent clearly.",
+      },
+      {
+        id: "c5",
+        front: "Robots.txt blocks /cart but Search Console still shows cart pages indexed. Why?",
+        back: "Robots.txt blocks crawling, not indexing; a noindex tag or removal request is needed instead.",
+      },
+    ],
+  };
+
+  it("accepts a valid deck of 5 application-phrased cards", () => {
+    const parsed = flashcardDeckBlock.parse(deck);
+    expect(validateFlashcardRefs(parsed)).toEqual([]);
+  });
+
+  it("rejects fewer than 5 cards at the zod level", () => {
+    const parsed = flashcardDeckBlock.safeParse({ ...deck, cards: deck.cards.slice(0, 4) });
+    expect(parsed.success).toBe(false);
+  });
+
+  it("rejects more than 30 cards at the zod level", () => {
+    const manyCards = Array.from({ length: 31 }, (_, i) => ({
+      id: `c${i}`,
+      front: `Situation ${i}`,
+      back: `Decision ${i}`,
+    }));
+    const parsed = flashcardDeckBlock.safeParse({ ...deck, cards: manyCards });
+    expect(parsed.success).toBe(false);
+  });
+
+  it("catches a duplicate card id within the deck", () => {
+    const broken = flashcardDeckBlock.parse({
+      ...deck,
+      cards: deck.cards.map((c, i) => (i === 1 ? { ...c, id: "c1" } : c)),
+    });
+    const problems = validateFlashcardRefs(broken);
+    expect(problems.some((p) => p.includes('duplicate card id "c1"'))).toBe(true);
+  });
+});
+
+describe("lessonContentSchema with chart-xl and flashcard-deck", () => {
+  const baseBlocks = [
+    { type: "text", markdown: "Crawl budget decides how much of a large site Google actually indexes." },
+    {
+      type: "analogy",
+      title: "The restocker analogy",
+      markdown: "A restocker with limited time hits the busiest aisles first, just like a crawler.",
+    },
+  ];
+
+  const chart = {
+    type: "chart-xl" as const,
+    id: "crawl-flow",
+    title: "Crawl budget flow through site sections",
+    kind: "sankey" as const,
+    unit: "crawls",
+    caption: "Most crawl budget flows to faceted URLs, not content.",
+    flow: {
+      nodes: [
+        { id: "total", label: "Total crawl budget" },
+        { id: "faceted", label: "Faceted URLs" },
+        { id: "content", label: "Content pages" },
+      ],
+      links: [
+        { from: "total", to: "faceted", value: 700 },
+        { from: "total", to: "content", value: 300 },
+      ],
+    },
+    probe: {
+      question: "Where does most crawl budget go?",
+      options: [
+        { id: "faceted", label: "Faceted URLs", correct: true },
+        { id: "content", label: "Content pages", correct: false },
+      ],
+      explain: "700 of 1000 crawl hits go to faceted URLs.",
+    },
+  };
+
+  const deck = {
+    type: "flashcard-deck" as const,
+    id: "crawl-budget-deck",
+    title: "Crawl budget recall",
+    cards: [
+      { id: "c1", front: "300 faceted URLs eat crawl budget. Fix?", back: "Block them via robots.txt or noindex." },
+      { id: "c2", front: "What is crawl budget?", back: "The number of pages a crawler will fetch in a period." },
+      { id: "c3", front: "Sitemap missing key pages. Effect?", back: "Slower discovery, not a hard block on indexing." },
+      { id: "c4", front: "Server returns 500s under crawler load. Fix?", back: "Throttle crawl rate and fix server capacity first." },
+      { id: "c5", front: "Duplicate content across paginated pages. Fix?", back: "Use rel=next/prev signals or canonical to page 1." },
+    ],
+  };
+
+  it("accepts a lesson whose chart-xl and flashcard-deck blocks are valid", () => {
+    const parsed = lessonContentSchema.safeParse({
+      intro: "Crawl budget is the currency you spend when Google visits your site.",
+      blocks: [...baseBlocks, chart, deck],
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("rejects a lesson whose chart-xl block has a sankey self-link", () => {
+    const brokenChart = {
+      ...chart,
+      flow: { ...chart.flow, links: [{ from: "total", to: "total", value: 100 }] },
+    };
+    const parsed = lessonContentSchema.safeParse({
+      intro: "Crawl budget is the currency you spend when Google visits your site.",
+      blocks: [...baseBlocks, brokenChart, deck],
+    });
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) {
+      expect(parsed.error.issues.some((issue) => issue.message.includes("self-link"))).toBe(true);
+    }
+  });
+
+  it("rejects a lesson whose flashcard-deck block has a duplicate card id", () => {
+    const brokenDeck = {
+      ...deck,
+      cards: deck.cards.map((c, i) => (i === 1 ? { ...c, id: "c1" } : c)),
+    };
+    const parsed = lessonContentSchema.safeParse({
+      intro: "Crawl budget is the currency you spend when Google visits your site.",
+      blocks: [...baseBlocks, chart, brokenDeck],
+    });
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) {
+      expect(parsed.error.issues.some((issue) => issue.message.includes('duplicate card id "c1"'))).toBe(true);
     }
   });
 });

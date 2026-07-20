@@ -820,6 +820,428 @@ export function validateHotspotRefs(block: z.infer<typeof hotspotBlock>): string
   return problems;
 }
 
+/*
+  J. chart-xl (TEACHING.md section 2, "Chart Catalog XL"): the full ECharts-
+  backed catalog rendered by components/artifacts/ChartXLBlock.tsx (batch
+  X2). Exactly one payload field is populated depending on `kind`, the same
+  "mode gates which fields are legal" pattern used by chart-advanced,
+  card-match, and infographic above. `caption` is always required (no
+  decorative charts) and at least one playable layer -- `story` (a
+  progressive-reveal walkthrough) or `probe` (a scored question) -- must be
+  present; that density rule is enforced in validateChartXlRefs below since
+  chartXlBlock itself must stay a plain z.object to sit inside the
+  discriminated union.
+*/
+export type ChartXlTreeNode = {
+  name: string;
+  value?: number;
+  children?: ChartXlTreeNode[];
+};
+
+const chartXlTreeNode: z.ZodType<ChartXlTreeNode> = z.lazy(() =>
+  z.object({
+    name: z.string().min(1),
+    value: z.number().optional(),
+    children: z.array(chartXlTreeNode).optional(),
+  })
+);
+
+const chartXlKind = z.enum([
+  "bar",
+  "stacked-bar",
+  "line",
+  "area",
+  "scatter",
+  "candlestick",
+  "pie",
+  "donut",
+  "radar",
+  "funnel",
+  "sunburst",
+  "treemap",
+  "sankey",
+  "graph",
+  "themeriver",
+  "heatmap",
+  "bubble",
+  "wordcloud",
+  "gantt",
+]);
+
+const chartXlCartesian = z.object({
+  categories: z.array(z.string().min(1)).min(2).max(24),
+  series: z
+    .array(z.object({ name: z.string().min(1), values: z.array(z.number()) }))
+    .min(1)
+    .max(6),
+});
+
+const chartXlPoints = z.object({
+  series: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        points: z
+          .array(
+            z.object({
+              x: z.number(),
+              y: z.number(),
+              size: z.number().nonnegative().optional(),
+              label: z.string().optional(),
+            })
+          )
+          .min(1),
+      })
+    )
+    .min(1),
+});
+
+const chartXlCandles = z.object({
+  categories: z.array(z.string().min(1)).min(2),
+  values: z.array(z.tuple([z.number(), z.number(), z.number(), z.number()])).min(1),
+});
+
+const chartXlParts = z.object({
+  items: z.array(z.object({ name: z.string().min(1), value: z.number() })).min(2).max(40),
+});
+
+const chartXlRadar = z.object({
+  axes: z.array(z.object({ name: z.string().min(1), max: z.number() })).min(3).max(8),
+  series: z
+    .array(z.object({ name: z.string().min(1), values: z.array(z.number()) }))
+    .min(1)
+    .max(3),
+});
+
+const chartXlTree = z.object({
+  nodes: z.array(chartXlTreeNode).min(1),
+});
+
+const chartXlFlow = z.object({
+  nodes: z.array(z.object({ id: z.string().min(1), label: z.string().min(1) })).min(2).max(30),
+  links: z
+    .array(z.object({ from: z.string().min(1), to: z.string().min(1), value: z.number() }))
+    .min(1),
+});
+
+const chartXlRiver = z.object({
+  series: z.array(z.string().min(1)).min(2).max(6),
+  points: z
+    .array(z.object({ date: z.string().min(1), series: z.string().min(1), value: z.number() }))
+    .min(1),
+});
+
+const chartXlGrid = z.object({
+  rowLabels: z.array(z.string().min(1)).min(1),
+  colLabels: z.array(z.string().min(1)).min(1),
+  values: z.array(z.array(z.number())).min(1),
+});
+
+const chartXlTasks = z.object({
+  items: z
+    .array(
+      z.object({
+        label: z.string().min(1),
+        start: z.number(),
+        end: z.number(),
+        group: z.string().optional(),
+      })
+    )
+    .min(1),
+});
+
+const chartXlStory = z.object({
+  steps: z.array(z.object({ text: z.string().min(1), focus: z.string().optional() })).min(1).max(6),
+});
+
+const chartXlProbe = z.object({
+  question: z.string().min(1),
+  options: z
+    .array(z.object({ id: z.string().min(1), label: z.string().min(1), correct: z.boolean() }))
+    .min(2)
+    .max(5),
+  explain: z.string().min(1),
+});
+
+export const chartXlBlock = z.object({
+  type: z.literal("chart-xl"),
+  id: z.string().min(1),
+  title: z.string().min(1),
+  kind: chartXlKind,
+  unit: z.string().default(""),
+  caption: z.string().min(1),
+  cartesian: chartXlCartesian.optional(),
+  points: chartXlPoints.optional(),
+  candles: chartXlCandles.optional(),
+  parts: chartXlParts.optional(),
+  radar: chartXlRadar.optional(),
+  tree: chartXlTree.optional(),
+  flow: chartXlFlow.optional(),
+  river: chartXlRiver.optional(),
+  grid: chartXlGrid.optional(),
+  tasks: chartXlTasks.optional(),
+  story: chartXlStory.optional(),
+  probe: chartXlProbe.optional(),
+});
+
+/* kind -> the single payload field that kind is allowed to populate. */
+const CHART_XL_PAYLOAD_BY_KIND: Record<z.infer<typeof chartXlKind>, string> = {
+  bar: "cartesian",
+  "stacked-bar": "cartesian",
+  line: "cartesian",
+  area: "cartesian",
+  scatter: "points",
+  bubble: "points",
+  candlestick: "candles",
+  pie: "parts",
+  donut: "parts",
+  funnel: "parts",
+  wordcloud: "parts",
+  radar: "radar",
+  sunburst: "tree",
+  treemap: "tree",
+  sankey: "flow",
+  graph: "flow",
+  themeriver: "river",
+  heatmap: "grid",
+  gantt: "tasks",
+};
+
+const CHART_XL_PAYLOAD_KEYS = [
+  "cartesian",
+  "points",
+  "candles",
+  "parts",
+  "radar",
+  "tree",
+  "flow",
+  "river",
+  "grid",
+  "tasks",
+] as const;
+
+/*
+  Every name a story.focus can legitimately point at for the block's
+  populated payload: series names, category labels, node ids/labels, part
+  names, axis names, or grid row/col labels, depending on which payload is
+  in play.
+*/
+function chartXlFocusTargets(block: z.infer<typeof chartXlBlock>): Set<string> {
+  const targets = new Set<string>();
+  if (block.cartesian) {
+    block.cartesian.categories.forEach((c) => targets.add(c));
+    block.cartesian.series.forEach((s) => targets.add(s.name));
+  }
+  if (block.points) {
+    block.points.series.forEach((s) => targets.add(s.name));
+  }
+  if (block.candles) {
+    block.candles.categories.forEach((c) => targets.add(c));
+  }
+  if (block.parts) {
+    block.parts.items.forEach((i) => targets.add(i.name));
+  }
+  if (block.radar) {
+    block.radar.axes.forEach((a) => targets.add(a.name));
+    block.radar.series.forEach((s) => targets.add(s.name));
+  }
+  if (block.tree) {
+    const walk = (nodes: ChartXlTreeNode[]) => {
+      nodes.forEach((n) => {
+        targets.add(n.name);
+        if (n.children) walk(n.children);
+      });
+    };
+    walk(block.tree.nodes);
+  }
+  if (block.flow) {
+    block.flow.nodes.forEach((n) => {
+      targets.add(n.id);
+      targets.add(n.label);
+    });
+  }
+  if (block.river) {
+    block.river.series.forEach((s) => targets.add(s));
+  }
+  if (block.grid) {
+    block.grid.rowLabels.forEach((r) => targets.add(r));
+    block.grid.colLabels.forEach((c) => targets.add(c));
+  }
+  if (block.tasks) {
+    block.tasks.items.forEach((i) => targets.add(i.label));
+  }
+  return targets;
+}
+
+function chartXlTreeDepth(nodes: ChartXlTreeNode[], depth: number): number {
+  return nodes.reduce(
+    (max, n) => Math.max(max, n.children && n.children.length > 0 ? chartXlTreeDepth(n.children, depth + 1) : depth),
+    depth
+  );
+}
+
+/*
+  Implements every check in TEACHING.md's validateChartXlRefs spec: the
+  payload matching `kind` is present and every other payload is absent,
+  length-matching within cartesian/candles/radar/grid, flow link resolution
+  (with sankey banning self-links), river series membership, gantt
+  end > start, story.focus resolving to a real payload name, probe having
+  exactly one correct option, and story-or-probe being required.
+*/
+export function validateChartXlRefs(block: z.infer<typeof chartXlBlock>): string[] {
+  const problems: string[] = [];
+  const expectedPayload = CHART_XL_PAYLOAD_BY_KIND[block.kind];
+
+  CHART_XL_PAYLOAD_KEYS.forEach((key) => {
+    const present = block[key] !== undefined;
+    if (key === expectedPayload && !present) {
+      problems.push(`kind "${block.kind}" requires the "${key}" payload`);
+    } else if (key !== expectedPayload && present) {
+      problems.push(`kind "${block.kind}" must not include the "${key}" payload (only "${expectedPayload}" is allowed)`);
+    }
+  });
+
+  if (block.cartesian && expectedPayload === "cartesian") {
+    const { categories, series } = block.cartesian;
+    series.forEach((s) => {
+      if (s.values.length !== categories.length) {
+        problems.push(
+          `cartesian series "${s.name}" has ${s.values.length} value(s) but there are ${categories.length} categories`
+        );
+      }
+    });
+  }
+
+  if (block.candles && expectedPayload === "candles") {
+    if (block.candles.values.length !== block.candles.categories.length) {
+      problems.push(
+        `candles has ${block.candles.values.length} value row(s) but ${block.candles.categories.length} categories`
+      );
+    }
+  }
+
+  if (block.radar && expectedPayload === "radar") {
+    const axesCount = block.radar.axes.length;
+    block.radar.series.forEach((s) => {
+      if (s.values.length !== axesCount) {
+        problems.push(
+          `radar series "${s.name}" has ${s.values.length} value(s) but there are ${axesCount} axes`
+        );
+      }
+    });
+  }
+
+  if (block.grid && expectedPayload === "grid") {
+    const { rowLabels, colLabels, values } = block.grid;
+    if (values.length !== rowLabels.length) {
+      problems.push(`grid has ${values.length} value row(s) but ${rowLabels.length} rowLabel(s)`);
+    }
+    values.forEach((row, i) => {
+      if (row.length !== colLabels.length) {
+        problems.push(`grid row ${i} has ${row.length} value(s) but there are ${colLabels.length} colLabel(s)`);
+      }
+    });
+  }
+
+  if (block.flow && expectedPayload === "flow") {
+    const nodeIds = new Set(block.flow.nodes.map((n) => n.id));
+    block.flow.links.forEach((link, i) => {
+      if (!nodeIds.has(link.from)) {
+        problems.push(`flow link ${i} references unknown node "${link.from}"`);
+      }
+      if (!nodeIds.has(link.to)) {
+        problems.push(`flow link ${i} references unknown node "${link.to}"`);
+      }
+      if (block.kind === "sankey" && link.from === link.to) {
+        problems.push(`sankey flow link ${i} is a self-link ("${link.from}" to itself), which is not allowed`);
+      }
+    });
+  }
+
+  if (block.river && expectedPayload === "river") {
+    const seriesNames = new Set(block.river.series);
+    block.river.points.forEach((p, i) => {
+      if (!seriesNames.has(p.series)) {
+        problems.push(`river point ${i} references unknown series "${p.series}"`);
+      }
+    });
+  }
+
+  if (block.tasks && expectedPayload === "tasks") {
+    block.tasks.items.forEach((item, i) => {
+      if (!(item.end > item.start)) {
+        problems.push(`tasks item ${i} ("${item.label}") must have end > start`);
+      }
+    });
+  }
+
+  if (block.tree && expectedPayload === "tree") {
+    const depth = chartXlTreeDepth(block.tree.nodes, 1);
+    if (depth > 4) {
+      problems.push(`tree payload nesting depth is ${depth}, must be at most 4`);
+    }
+  }
+
+  if (block.story) {
+    const targets = chartXlFocusTargets(block);
+    block.story.steps.forEach((step, i) => {
+      if (step.focus !== undefined && !targets.has(step.focus)) {
+        problems.push(
+          `story step ${i} focus "${step.focus}" does not resolve to a real series, category, node, or part name`
+        );
+      }
+    });
+  }
+
+  if (block.probe) {
+    const correctCount = block.probe.options.filter((o) => o.correct).length;
+    if (correctCount !== 1) {
+      problems.push(`probe must have exactly one option with correct true (found ${correctCount})`);
+    }
+  }
+
+  if (!block.story && !block.probe) {
+    problems.push(`chart-xl requires at least one of "story" or "probe"`);
+  }
+
+  return problems;
+}
+
+/*
+  K. flashcard-deck (TEACHING.md section 4): the "Retain" beat that closes
+  every lesson, feeding the SM-2-lite spaced-repetition queue persisted in
+  supabase/migrations/0003_review_state.sql. Cards are application-phrased
+  ("Client's blog has 300 thin tag pages. Index or noindex?") rather than
+  pure definitions, though the AI authoring guidance allows up to a third of
+  a deck to be definitional. card ids only need to be unique within their own
+  deck; validateFlashcardRefs enforces that.
+*/
+const flashcardCard = z.object({
+  id: z.string().min(1),
+  front: z.string().min(1),
+  back: z.string().min(1),
+  tag: z.string().optional(),
+});
+
+export const flashcardDeckBlock = z.object({
+  type: z.literal("flashcard-deck"),
+  id: z.string().min(1),
+  title: z.string().min(1),
+  cards: z.array(flashcardCard).min(5).max(30),
+});
+
+export function validateFlashcardRefs(block: z.infer<typeof flashcardDeckBlock>): string[] {
+  const problems: string[] = [];
+  const seen = new Set<string>();
+  block.cards.forEach((card) => {
+    if (seen.has(card.id)) {
+      problems.push(`duplicate card id "${card.id}" in deck "${block.id}"`);
+    }
+    seen.add(card.id);
+  });
+  return problems;
+}
+
 export const lessonBlock = z.discriminatedUnion("type", [
   textBlock,
   analogyBlock,
@@ -847,6 +1269,8 @@ export const lessonBlock = z.discriminatedUnion("type", [
   whiteboardBlock,
   infographicBlock,
   hotspotBlock,
+  chartXlBlock,
+  flashcardDeckBlock,
 ]);
 
 export const lessonContentSchema = z
@@ -875,6 +1299,10 @@ export const lessonContentSchema = z
         problems = validateInfographicRefs(block);
       } else if (block.type === "hotspot") {
         problems = validateHotspotRefs(block);
+      } else if (block.type === "chart-xl") {
+        problems = validateChartXlRefs(block);
+      } else if (block.type === "flashcard-deck") {
+        problems = validateFlashcardRefs(block);
       }
       problems.forEach((message) => {
         ctx.addIssue({
@@ -901,6 +1329,8 @@ export type CardMatchBlock = z.infer<typeof cardMatchBlock>;
 export type WhiteboardBlock = z.infer<typeof whiteboardBlock>;
 export type InfographicBlock = z.infer<typeof infographicBlock>;
 export type HotspotBlock = z.infer<typeof hotspotBlock>;
+export type ChartXlBlock = z.infer<typeof chartXlBlock>;
+export type FlashcardDeckBlock = z.infer<typeof flashcardDeckBlock>;
 
 /*
   A learner's route through a simulation: the stage they were on and the
@@ -1081,4 +1511,23 @@ export function scoreHotspot(block: z.infer<typeof hotspotBlock>, selectedRegion
   });
   const raw = ((truePositives - falsePositives) / totalIssues) * 100;
   return Math.round(Math.max(0, Math.min(100, raw)));
+}
+
+/*
+  chart-xl's probe scoring bands, matching the mission simulation's
+  best/good/poor -> 100/60/20 shape (SIMULATION_QUALITY_SCORE above): a
+  learner who answers correctly on the first attempt scores full marks, one
+  who needed a retry scores partial credit, and one who gave up and revealed
+  the answer scores the minimum non-zero credit for having engaged with it.
+*/
+export type ChartXlProbeOutcome = "correct-first-try" | "correct-retry" | "revealed";
+
+const CHART_XL_PROBE_SCORE: Record<ChartXlProbeOutcome, number> = {
+  "correct-first-try": 100,
+  "correct-retry": 60,
+  revealed: 20,
+};
+
+export function scoreChartXlProbe(outcome: ChartXlProbeOutcome): number {
+  return CHART_XL_PROBE_SCORE[outcome];
 }
