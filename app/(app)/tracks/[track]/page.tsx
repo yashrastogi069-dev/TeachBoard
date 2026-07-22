@@ -70,10 +70,12 @@ export default async function TrackPage(props: PageProps<"/tracks/[track]">) {
 
   return (
     <div data-accent={track.accent} className="mx-auto flex w-full max-w-4xl flex-col gap-5">
-      <header className="flex flex-wrap items-center justify-between gap-4">
+      <header className="accent-wash relative flex flex-wrap items-center justify-between gap-4 overflow-hidden rounded-2xl border border-line bg-bg-raised/50 p-6">
         <div className="leading-tight">
-          <h1 className="font-display text-xl font-semibold text-ink">{track.title}</h1>
-          <p className="pt-1 text-sm text-ink-muted">{track.tagline}</p>
+          <h1 className="font-display text-2xl font-semibold tracking-[-0.012em] text-ink text-balance">
+            {track.title}
+          </h1>
+          <p className="measure pt-1.5 text-base text-ink-muted text-pretty">{track.tagline}</p>
         </div>
         {modules.length > 0 && <ProgressRing value={trackMastery} size={64} strokeWidth={5} />}
       </header>
@@ -92,22 +94,21 @@ export default async function TrackPage(props: PageProps<"/tracks/[track]">) {
               <li key={mod.id}>
                 <Link
                   href={`/tracks/${track.slug}/${mod.slug}`}
-                  className={`flex items-start gap-4 rounded-2xl border p-5 transition-colors duration-150 ${
-                    isCurrent
-                      ? "border-accent/40 bg-bg-raised/70"
-                      : "border-line bg-bg-raised/50 hover:border-line-strong"
+                  className={`card-hover flex items-start gap-4 rounded-2xl border bg-bg-raised/50 p-5 ${
+                    complete
+                      ? "border-success/25"
+                      : isCurrent
+                        ? "glow-accent border-accent/40"
+                        : "border-line"
                   }`}
-                  style={
-                    isCurrent ? { boxShadow: "0 0 36px -14px var(--accent-glow)" } : undefined
-                  }
                 >
                   <span
                     className={`mt-0.5 grid size-10 shrink-0 place-items-center rounded-full border ${
                       complete
-                        ? "border-accent/40 bg-accent-soft text-accent"
+                        ? "border-success/40 bg-success-soft text-success"
                         : isCurrent
                           ? "border-accent/60 bg-accent-soft text-accent-bright"
-                          : "border-line bg-bg-overlay text-ink-faint"
+                          : "border-line bg-bg-overlay text-ink-muted"
                     }`}
                   >
                     {complete ? (
@@ -120,20 +121,28 @@ export default async function TrackPage(props: PageProps<"/tracks/[track]">) {
                   </span>
                   <span className="min-w-0 flex-1 leading-tight">
                     <span className="flex flex-wrap items-baseline gap-2">
-                      <span className="text-sm font-medium text-ink">
+                      <span className="text-base font-semibold text-ink">
                         {index + 1}. {mod.title}
                       </span>
-                      <span className="rounded-md bg-bg-overlay px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-ink-faint">
+                      <span className="rounded-md bg-bg-overlay px-1.5 py-0.5 text-xs uppercase tracking-wider text-ink-muted">
                         {mod.difficulty}
                       </span>
                     </span>
-                    <span className="block pt-1 text-xs text-ink-muted">{mod.summary}</span>
-                    <span className="flex flex-wrap items-center gap-3 pt-2 text-[11px] text-ink-faint">
-                      <span className="tabular">
+                    <span className="measure block pt-1.5 text-sm text-ink-muted text-pretty">
+                      {mod.summary}
+                    </span>
+                    <span className="mt-3 flex h-1.5 overflow-hidden rounded-full bg-bg-overlay">
+                      <span
+                        className={`h-full rounded-full ${complete ? "bg-success" : "bg-accent"}`}
+                        style={{ width: `${total > 0 ? (done / total) * 100 : 0}%` }}
+                      />
+                    </span>
+                    <span className="flex flex-wrap items-center gap-3 pt-2.5 text-xs text-ink-muted">
+                      <span className="tabular font-medium">
                         {done}/{total} lessons
                       </span>
                       <span className="flex items-center gap-1">
-                        <Exam size={12} className="text-accent" />
+                        <Exam size={14} className="text-accent" />
                         {mod.assessments.length} practical test
                         {mod.assessments.length === 1 ? "" : "s"}
                       </span>

@@ -56,18 +56,22 @@ export default async function LessonPage(
 
   return (
     <div data-accent={track.accent} className="mx-auto flex w-full max-w-3xl flex-col gap-4">
-      <nav className="text-[11px] text-ink-faint">
-        <Link href={`/tracks/${track.slug}`} className="transition-colors hover:text-ink">
+      <nav className="text-xs text-ink-muted">
+        <Link
+          href={`/tracks/${track.slug}`}
+          className="font-medium transition-colors hover:text-ink"
+        >
           {track.title}
         </Link>{" "}
-        /{" "}
+        <span className="text-ink-faint">/</span>{" "}
         <Link
           href={`/tracks/${track.slug}/${mod.slug}`}
-          className="transition-colors hover:text-ink"
+          className="font-medium transition-colors hover:text-ink"
         >
           {mod.title}
         </Link>{" "}
-        / <span className="text-ink-muted">{lesson.title}</span>
+        <span className="text-ink-faint">/</span>{" "}
+        <span className="font-medium text-ink">{lesson.title}</span>
       </nav>
 
       <LessonPlayer

@@ -30,10 +30,10 @@ export default function Sidebar() {
           <GraduationCap size={20} weight="duotone" />
         </span>
         <div className="leading-tight">
-          <p className="font-display text-sm font-semibold tracking-wide text-ink">
+          <p className="font-display text-base font-semibold tracking-wide text-ink">
             Praxis
           </p>
-          <p className="text-[11px] text-ink-faint">Your practical professor</p>
+          <p className="text-xs text-ink-faint">Your practical professor</p>
         </div>
       </div>
 
@@ -44,12 +44,12 @@ export default function Sidebar() {
             return (
               <span
                 key={item.href}
-                className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink-faint"
+                className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2 text-base text-ink-faint"
                 title="Built in a later phase"
               >
-                <NavIcon size={16} />
+                <NavIcon size={18} />
                 {item.label}
-                <Lock size={12} className="ml-auto" />
+                <Lock size={13} className="ml-auto" />
               </span>
             );
           }
@@ -60,11 +60,15 @@ export default function Sidebar() {
               href={item.href}
               className={
                 active
-                  ? "flex items-center gap-3 rounded-lg bg-accent-soft px-3 py-2 text-sm font-medium text-accent-bright"
-                  : "flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink-muted transition-colors hover:bg-bg-overlay hover:text-ink active:scale-[0.99]"
+                  ? "flex items-center gap-3 rounded-lg bg-accent-soft px-3 py-2 text-base font-semibold text-accent-bright"
+                  : "row-hover flex items-center gap-3 rounded-lg px-3 py-2 text-base font-medium text-ink active:scale-[0.99]"
               }
             >
-              <NavIcon size={16} weight={active ? "duotone" : "regular"} />
+              <NavIcon
+                size={18}
+                weight={active ? "duotone" : "regular"}
+                className={active ? "text-accent" : "text-ink-muted"}
+              />
               {item.label}
             </Link>
           );
@@ -72,7 +76,7 @@ export default function Sidebar() {
       </nav>
 
       <div className="px-3 pt-2">
-        <p className="px-3 pb-2 text-[11px] font-medium uppercase tracking-widest text-ink-faint">
+        <p className="px-3 pb-2 text-xs font-medium uppercase tracking-widest text-ink-faint">
           Skill tracks
         </p>
         <div className="flex flex-col gap-1">
@@ -82,12 +86,12 @@ export default function Sidebar() {
                 <span
                   key={t.slug}
                   data-accent={t.accent}
-                  className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink-faint"
+                  className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2 text-base text-ink-muted"
                   title={`${t.tagline}. This course opens after the first two are complete.`}
                 >
-                  <span className="size-2 rounded-full bg-accent opacity-50" />
+                  <span className="size-2 shrink-0 rounded-full bg-accent" />
                   <span className="truncate">{t.title}</span>
-                  <span className="ml-auto shrink-0 whitespace-nowrap rounded-md border border-line px-1.5 py-0.5 text-[10px] text-ink-faint">
+                  <span className="ml-auto shrink-0 whitespace-nowrap rounded-md border border-line px-1.5 py-0.5 text-xs text-ink-muted">
                     Soon
                   </span>
                 </span>
@@ -102,12 +106,12 @@ export default function Sidebar() {
                 title={t.tagline}
                 className={
                   active
-                    ? "flex items-center gap-3 rounded-lg bg-accent-soft px-3 py-2 text-sm font-medium text-accent-bright"
-                    : "flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink-muted transition-colors hover:bg-bg-overlay hover:text-ink"
+                    ? "flex items-center gap-3 rounded-lg bg-accent-soft px-3 py-2 text-base font-semibold text-accent-bright"
+                    : "row-hover flex items-center gap-3 rounded-lg px-3 py-2 text-base font-medium text-ink"
                 }
               >
                 <span
-                  className="size-2 rounded-full bg-accent"
+                  className="size-2 shrink-0 rounded-full bg-accent"
                   style={{ boxShadow: "0 0 8px 0 var(--accent-glow)" }}
                 />
                 <span className="truncate">{t.title}</span>
@@ -117,7 +121,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <p className="mt-auto px-6 py-4 text-[11px] text-ink-faint">
+      <p className="mt-auto px-6 py-4 text-xs text-ink-faint">
         Praxis · learning that ships
       </p>
     </aside>

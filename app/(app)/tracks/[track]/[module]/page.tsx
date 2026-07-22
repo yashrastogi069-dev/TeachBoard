@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import {
   BookOpen,
   CheckCircle,
-  Circle,
   Exam,
+  ListChecks,
+  Lock,
+  Play,
 } from "@phosphor-icons/react/dist/ssr";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -69,59 +71,79 @@ export default async function ModulePage(props: PageProps<"/tracks/[track]/[modu
 
   return (
     <div data-accent={track.accent} className="mx-auto flex w-full max-w-3xl flex-col gap-5">
-      <nav className="text-[11px] text-ink-faint">
-        <Link href={`/tracks/${track.slug}`} className="transition-colors hover:text-ink">
+      <nav className="text-xs text-ink-muted">
+        <Link
+          href={`/tracks/${track.slug}`}
+          className="font-medium transition-colors hover:text-ink"
+        >
           {track.title}
         </Link>{" "}
-        / <span className="text-ink-muted">{mod.title}</span>
+        <span className="text-ink-faint">/</span>{" "}
+        <span className="font-medium text-ink">{mod.title}</span>
       </nav>
 
       <header className="leading-tight">
-        <h1 className="font-display text-xl font-semibold text-ink">{mod.title}</h1>
-        <p className="pt-1 text-sm text-ink-muted">{mod.summary}</p>
-        <p className="tabular pt-2 text-[11px] uppercase tracking-wider text-ink-faint">
+        <h1 className="font-display text-2xl font-semibold tracking-[-0.012em] text-ink text-balance">
+          {mod.title}
+        </h1>
+        <p className="measure pt-1.5 text-base text-ink-muted text-pretty">{mod.summary}</p>
+        <p className="tabular pt-2.5 text-xs font-medium uppercase tracking-wider text-ink-muted">
           {mod.difficulty} · ~{mod.est_minutes} min
         </p>
       </header>
 
       <section>
-        <h2 className="pb-2 text-[11px] font-medium uppercase tracking-widest text-ink-faint">
-          Lessons
+        <h2 className="flex items-center gap-2.5 pb-3">
+          <span className="chip-icon text-accent">
+            <BookOpen size={16} weight="duotone" />
+          </span>
+          <span className="font-display text-lg font-semibold text-ink">Lessons</span>
         </h2>
         <ol className="flex flex-col gap-2">
-          {(lessons ?? []).map((lesson, i) => {
-            const p = progressByLesson.get(lesson.id);
-            const complete = p?.status === "completed";
-            return (
-              <li key={lesson.id}>
-                <Link
-                  href={`/tracks/${track.slug}/${mod.slug}/${lesson.slug}`}
-                  className="flex items-center gap-3 rounded-xl border border-line bg-bg-raised/50 p-4 transition-colors duration-150 hover:border-accent/40"
-                >
-                  {complete ? (
-                    <CheckCircle size={18} weight="fill" className="shrink-0 text-success" />
-                  ) : (
-                    <Circle size={18} className="shrink-0 text-ink-faint" />
-                  )}
-                  <span className="min-w-0 flex-1 text-sm text-ink">
-                    {i + 1}. {lesson.title}
-                  </span>
-                  {complete && (
-                    <span className="tabular shrink-0 text-xs font-medium text-success">
-                      {Math.round(Number(p?.mastery ?? 0))}%
+          {(() => {
+            let nextSeen = false;
+            return (lessons ?? []).map((lesson, i) => {
+              const p = progressByLesson.get(lesson.id);
+              const complete = p?.status === "completed";
+              const isNext = !complete && !nextSeen;
+              if (isNext) nextSeen = true;
+              return (
+                <li key={lesson.id}>
+                  <Link
+                    href={`/tracks/${track.slug}/${mod.slug}/${lesson.slug}`}
+                    className={`row-hover flex items-center gap-3 rounded-xl border bg-bg-raised/50 p-4 ${
+                      isNext ? "border-accent/40" : "border-line"
+                    }`}
+                  >
+                    {complete ? (
+                      <CheckCircle size={18} weight="duotone" className="shrink-0 text-success" />
+                    ) : isNext ? (
+                      <Play size={18} weight="duotone" className="shrink-0 text-accent" />
+                    ) : (
+                      <Lock size={16} className="shrink-0 text-ink-faint" />
+                    )}
+                    <span className="min-w-0 flex-1 text-base font-medium text-ink">
+                      {i + 1}. {lesson.title}
                     </span>
-                  )}
-                  <BookOpen size={14} className="shrink-0 text-accent" weight="duotone" />
-                </Link>
-              </li>
-            );
-          })}
+                    {complete && (
+                      <span className="tabular shrink-0 text-sm font-semibold text-success">
+                        {Math.round(Number(p?.mastery ?? 0))}%
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              );
+            });
+          })()}
         </ol>
       </section>
 
       <section>
-        <h2 className="pb-2 text-[11px] font-medium uppercase tracking-widest text-ink-faint">
-          Practical tests
+        <h2 className="flex items-center gap-2.5 pb-3">
+          <span className="chip-icon text-warning">
+            <ListChecks size={16} weight="duotone" />
+          </span>
+          <span className="font-display text-lg font-semibold text-ink">Practical tests</span>
         </h2>
         <div className="flex flex-col gap-2">
           {(assessments ?? []).map((assessment) => {
@@ -130,23 +152,23 @@ export default async function ModulePage(props: PageProps<"/tracks/[track]/[modu
               <Link
                 key={assessment.id}
                 href={`/assess/${assessment.id}`}
-                className="flex items-start gap-3 rounded-xl border border-line bg-bg-raised/50 p-4 transition-colors duration-150 hover:border-accent/40"
+                className="card-hover flex items-start gap-3 rounded-xl border border-line bg-bg-raised/50 p-4"
               >
-                <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-accent-soft text-accent">
+                <span className="chip-icon mt-0.5 text-warning">
                   <Exam size={16} weight="duotone" />
                 </span>
                 <span className="min-w-0 flex-1 leading-tight">
-                  <span className="block text-sm font-medium text-ink">
+                  <span className="block text-base font-semibold text-ink">
                     {assessment.title}
                   </span>
-                  <span className="block pt-1 text-xs text-ink-muted">
+                  <span className="measure block pt-1.5 text-sm text-ink-muted text-pretty">
                     {assessment.brief.slice(0, 140)}
                     {assessment.brief.length > 140 ? "..." : ""}
                   </span>
                 </span>
                 {latest && latest.score !== null && (
                   <span
-                    className={`tabular shrink-0 text-sm font-semibold ${
+                    className={`tabular shrink-0 text-lg font-semibold ${
                       Number(latest.score) >= 70 ? "text-success" : "text-warning"
                     }`}
                   >
@@ -157,7 +179,7 @@ export default async function ModulePage(props: PageProps<"/tracks/[track]/[modu
             );
           })}
           {(assessments ?? []).length === 0 && (
-            <p className="rounded-xl border border-line bg-bg/40 p-4 text-xs text-ink-faint">
+            <p className="rounded-xl border border-line bg-bg/40 p-4 text-sm text-ink-muted">
               No practical tests in this module.
             </p>
           )}

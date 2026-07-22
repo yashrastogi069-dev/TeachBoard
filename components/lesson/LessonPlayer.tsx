@@ -4,13 +4,104 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
-import { ArrowRight, CheckCircle, Sparkle } from "@phosphor-icons/react";
+import {
+  ArrowRight,
+  Article,
+  CheckCircle,
+  ChartBar,
+  ClockCounterClockwise,
+  Columns,
+  Crosshair,
+  Cube,
+  Eyeglasses,
+  FlowArrow,
+  Graph,
+  type Icon,
+  ImageSquare,
+  Lightbulb,
+  NotePencil,
+  Path,
+  PencilLine,
+  PencilSimpleLine,
+  Question,
+  Sliders,
+  Sparkle,
+  SquaresFour,
+  Stack,
+  Table,
+  Target,
+  Terminal,
+  TreeStructure,
+  VideoCamera,
+  Cards,
+} from "@phosphor-icons/react";
 import type { LessonContent } from "@/lib/blocks";
 import ArtifactRenderer from "@/components/artifacts/ArtifactRenderer";
 import { MissionProvider } from "@/components/lesson/MissionContext";
 import { useTutor } from "@/components/shell/TutorContext";
 
 const EASE: [number, number, number, number] = [0.23, 1, 0.32, 1];
+
+/*
+  Per-block "signpost" header shown above each artifact so the lesson reads as
+  a sequence of distinct stations, not one long gray column. Color is by block
+  FAMILY (content = neutral, interactive = accent, scored/test = warning); the
+  icon and label name the block type. No left-border stripe (banned pattern).
+*/
+type BlockFamily = "content" | "interactive" | "test";
+
+const FAMILY_TONE: Record<BlockFamily, string> = {
+  content: "text-ink-muted",
+  interactive: "text-accent",
+  test: "text-warning",
+};
+
+const BLOCK_META: Record<string, { icon: Icon; label: string; family: BlockFamily }> = {
+  text: { icon: Article, label: "Read", family: "content" },
+  analogy: { icon: Lightbulb, label: "Analogy", family: "content" },
+  "worked-example": { icon: PencilLine, label: "Worked example", family: "content" },
+  compare: { icon: Columns, label: "Compare", family: "content" },
+  chart: { icon: ChartBar, label: "Chart", family: "content" },
+  "chart-advanced": { icon: ChartBar, label: "Chart", family: "content" },
+  "chart-xl": { icon: ChartBar, label: "Chart", family: "content" },
+  video: { icon: VideoCamera, label: "Watch", family: "content" },
+  "tree-map": { icon: TreeStructure, label: "Map", family: "content" },
+  "graph-diagram": { icon: Graph, label: "Diagram", family: "content" },
+  flowchart: { icon: FlowArrow, label: "Flowchart", family: "content" },
+  "financial-statement": { icon: Table, label: "Financials", family: "content" },
+  timeline: { icon: ClockCounterClockwise, label: "Timeline", family: "content" },
+  infographic: { icon: ImageSquare, label: "Infographic", family: "content" },
+  "slider-sim": { icon: Sliders, label: "Simulator", family: "interactive" },
+  "terminal-sim": { icon: Terminal, label: "Terminal", family: "interactive" },
+  simulation: { icon: Cube, label: "Simulation", family: "interactive" },
+  mission: { icon: Target, label: "Mission", family: "interactive" },
+  "framework-canvas": { icon: SquaresFour, label: "Framework", family: "interactive" },
+  whiteboard: { icon: PencilSimpleLine, label: "Whiteboard", family: "interactive" },
+  reflection: { icon: NotePencil, label: "Reflection", family: "interactive" },
+  "expert-review": { icon: Eyeglasses, label: "Expert review", family: "interactive" },
+  quiz: { icon: Question, label: "Quick check", family: "test" },
+  "card-sort": { icon: Cards, label: "Card sort", family: "test" },
+  "card-match": { icon: Cards, label: "Match", family: "test" },
+  hotspot: { icon: Crosshair, label: "Find it", family: "test" },
+  scenario: { icon: Path, label: "Scenario", family: "test" },
+  "flashcard-deck": { icon: Stack, label: "Flashcards", family: "test" },
+};
+
+function BlockSignpost({ type }: { type: string }) {
+  const meta = BLOCK_META[type];
+  if (!meta) return null;
+  const BlockIcon = meta.icon;
+  const tone = FAMILY_TONE[meta.family];
+  return (
+    <div className="flex items-center gap-2 pb-2">
+      <BlockIcon size={15} weight="duotone" className={tone} />
+      <span className={`text-xs font-semibold uppercase tracking-wider ${tone}`}>
+        {meta.label}
+      </span>
+      <span className="h-px flex-1 bg-line" />
+    </div>
+  );
+}
 
 const GENERATING_LINES = [
   "Researching this topic so the lesson is current...",
@@ -110,6 +201,7 @@ export default function LessonPlayer({
         b.type === "card-match" ||
         b.type === "hotspot" ||
         b.type === "whiteboard" ||
+        (b.type === "chart-xl" && !!b.probe) ||
         (b.type === "framework-canvas" && b.mode === "presented")
     ).length ?? 0;
   const mastery =
@@ -150,8 +242,8 @@ export default function LessonPlayer({
         <span className="mx-auto grid size-12 animate-pulse place-items-center rounded-2xl bg-accent-soft text-accent">
           <Sparkle size={24} weight="duotone" />
         </span>
-        <h1 className="font-display pt-4 text-lg font-semibold text-ink">{lessonTitle}</h1>
-        <p className="pt-2 text-sm text-ink-muted">{GENERATING_LINES[genLine]}</p>
+        <h1 className="font-display pt-4 text-xl font-semibold text-ink text-balance">{lessonTitle}</h1>
+        <p className="pt-2 text-base text-ink-muted">{GENERATING_LINES[genLine]}</p>
         <div className="mx-auto mt-5 h-1 max-w-xs overflow-hidden rounded-full bg-bg-overlay">
           <motion.div
             initial={{ width: "5%" }}
@@ -160,7 +252,7 @@ export default function LessonPlayer({
             className="h-full rounded-full bg-accent"
           />
         </div>
-        <p className="pt-4 text-[11px] text-ink-faint">
+        <p className="pt-4 text-xs text-ink-faint">
           This happens once; afterwards the lesson opens instantly.
         </p>
       </div>
@@ -170,8 +262,8 @@ export default function LessonPlayer({
   if (!content) {
     return (
       <div className="rounded-2xl border border-danger/30 bg-danger/5 p-8 text-center">
-        <h1 className="font-display text-lg font-semibold text-ink">{lessonTitle}</h1>
-        <p className="mx-auto max-w-md pt-3 text-xs leading-relaxed text-danger">
+        <h1 className="font-display text-xl font-semibold text-ink text-balance">{lessonTitle}</h1>
+        <p className="mx-auto max-w-md pt-3 text-sm leading-relaxed text-danger">
           {error ?? "The lesson could not be generated."}
         </p>
         <button
@@ -188,10 +280,12 @@ export default function LessonPlayer({
   return (
     <article className="flex flex-col gap-4 pb-8">
       <header className="leading-tight">
-        <h1 className="font-display text-2xl font-semibold text-ink">{lessonTitle}</h1>
-        <p className="pt-2 text-sm text-accent-bright">{content.intro}</p>
+        <h1 className="font-display text-3xl font-semibold tracking-[-0.012em] text-ink text-balance">
+          {lessonTitle}
+        </h1>
+        <p className="measure pt-2.5 text-base text-accent-bright text-pretty">{content.intro}</p>
         {completed && previousMastery !== null && (
-          <p className="pt-2 text-[11px] text-success">
+          <p className="pt-2.5 text-sm text-success">
             Completed before with {previousMastery}% mastery. Going through it again only
             makes it stick better.
           </p>
@@ -208,6 +302,7 @@ export default function LessonPlayer({
               viewport={{ once: true, amount: 0.15 }}
               transition={{ duration: 0.24, ease: EASE }}
             >
+              <BlockSignpost type={block.type} />
               <ArtifactRenderer
                 block={block}
                 onCheck={(score) => setChecks((c) => ({ ...c, [i]: score }))}
@@ -222,12 +317,12 @@ export default function LessonPlayer({
 
       <footer className="mt-2 rounded-2xl border border-line bg-bg-raised/60 p-5">
         {error && (
-          <p className="mb-3 rounded-xl border border-danger/30 bg-danger/10 p-3 text-xs text-danger">
+          <p className="mb-3 rounded-xl border border-danger/30 bg-danger/10 p-3 text-sm leading-relaxed text-danger">
             {error}
           </p>
         )}
         {interactiveCount > 0 && (
-          <p className="pb-3 text-xs text-ink-muted">
+          <p className="pb-3 text-sm text-ink-muted">
             Checks completed:{" "}
             <span className="tabular font-medium text-ink">
               {checkScores.length}/{interactiveCount}
@@ -250,7 +345,7 @@ export default function LessonPlayer({
             type="button"
             onClick={complete}
             disabled={completing}
-            className="flex items-center gap-2 rounded-xl bg-accent-soft px-5 py-2.5 text-sm font-medium text-accent-bright transition-transform duration-150 hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+            className="glow-accent-strong flex items-center gap-2 rounded-xl bg-accent-soft px-5 py-2.5 text-sm font-semibold text-accent-bright transition-transform duration-150 hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
           >
             <CheckCircle size={16} weight={completed ? "fill" : "duotone"} />
             {completing

@@ -100,7 +100,7 @@ export default function Copilot() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Open the Professor chat"
-        className="fixed bottom-6 right-6 z-40 grid size-13 place-items-center rounded-full border border-accent/40 bg-bg-overlay text-accent-bright transition-transform duration-150 hover:scale-105 active:scale-[0.97]"
+        className="glow-breathe fixed bottom-6 right-6 z-40 grid size-13 place-items-center rounded-full border border-accent/40 bg-bg-overlay text-accent-bright transition-transform duration-150 hover:scale-105 active:scale-[0.97]"
         style={{ boxShadow: "0 0 28px -6px var(--accent-glow)" }}
       >
         <ChatCircleDots size={24} weight="duotone" />
@@ -122,7 +122,7 @@ export default function Copilot() {
               animate={reduce ? { opacity: 1 } : { x: 0 }}
               exit={reduce ? { opacity: 0 } : { x: "100%" }}
               transition={{ duration: 0.25, ease: EASE }}
-              className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-line bg-bg-raised"
+              className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-line-strong bg-bg-overlay/80 shadow-2xl shadow-black/50 backdrop-blur-xl"
               role="dialog"
               aria-label="Professor chat panel"
             >
@@ -131,8 +131,8 @@ export default function Copilot() {
                   <GraduationCap size={18} weight="duotone" />
                 </span>
                 <div className="min-w-0 leading-tight">
-                  <p className="text-sm font-semibold text-ink">The Professor</p>
-                  <p className="truncate text-[11px] text-ink-faint">
+                  <p className="text-base font-semibold text-ink">The Professor</p>
+                  <p className="truncate text-xs text-ink-muted">
                     {lesson
                       ? `discussing: ${lesson.lessonTitle}`
                       : "ask about anything you are learning"}
@@ -150,7 +150,7 @@ export default function Copilot() {
 
               <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-5">
                 {messages.length === 0 && (
-                  <div className="rounded-2xl border border-line bg-bg/40 p-4 text-xs leading-relaxed text-ink-muted">
+                  <div className="measure rounded-2xl border border-line bg-bg/40 p-4 text-base leading-relaxed text-ink-muted">
                     Ask me anything about what you are learning. I will usually
                     answer with a question first, because reasoning it out
                     yourself is what makes it stick. Say &quot;just explain it&quot;
@@ -168,7 +168,7 @@ export default function Copilot() {
                       }
                     >
                       {m.role === "user" ? (
-                        <p className="text-xs leading-relaxed text-ink">{m.content}</p>
+                        <p className="text-base leading-relaxed text-ink">{m.content}</p>
                       ) : m.content ? (
                         <Markdown text={m.content} />
                       ) : (
@@ -182,7 +182,7 @@ export default function Copilot() {
                   ))}
                 </div>
                 {error && (
-                  <p className="mt-3 rounded-xl border border-danger/30 bg-danger/10 p-3 text-xs text-danger">
+                  <p className="mt-3 rounded-xl border border-danger/30 bg-danger/10 p-3 text-sm leading-relaxed text-danger">
                     {error}
                   </p>
                 )}
@@ -207,7 +207,7 @@ export default function Copilot() {
                       }
                     }}
                     placeholder={busy ? "The Professor is thinking..." : "Ask the Professor"}
-                    className="max-h-28 w-full resize-none bg-transparent text-xs leading-relaxed text-ink placeholder:text-ink-faint focus:outline-none"
+                    className="max-h-28 w-full resize-none bg-transparent text-base leading-relaxed text-ink placeholder:text-ink-faint focus:outline-none"
                   />
                   <button
                     type="submit"
