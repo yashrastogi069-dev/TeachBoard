@@ -33,6 +33,7 @@ import CardMatchBlock from "@/components/artifacts/CardMatchBlock";
 import WhiteboardBlock from "@/components/artifacts/WhiteboardBlock";
 import InfographicBlock from "@/components/artifacts/InfographicBlock";
 import HotspotBlock from "@/components/artifacts/HotspotBlock";
+import ChartXLBlock from "@/components/artifacts/ChartXLBlock";
 
 /*
   Maps a validated lesson block to its component. onCheck receives 0-100
@@ -128,6 +129,8 @@ export default function ArtifactRenderer({
       return <InfographicBlock block={block} />;
     case "hotspot":
       return <HotspotBlock block={block} onCheck={onCheck} />;
+    case "chart-xl":
+      return <ChartXLBlock block={block} onCheck={onCheck} />;
     default:
       return null;
   }
