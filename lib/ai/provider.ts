@@ -221,8 +221,12 @@ function extractJson(text: string): string {
 
 /*
   JSON completion validated against a zod schema. On a parse/validation
-  failure the same provider chain gets ONE repair round with the error
-  message included, then we give up with a reported error.
+  failure the same provider chain gets up to TWO repair rounds (3 attempts
+  total) with the error message included, then we give up with a reported
+  error. Schema-validation failures (as opposed to raw JSON.parse failures)
+  get a surgical repair prompt: return the previous JSON with ONLY the listed
+  fields fixed, so a full regeneration does not reintroduce the same or a new
+  mistake.
 */
 export async function aiJson<T>(
   schema: z.ZodType<T>,
@@ -231,14 +235,18 @@ export async function aiJson<T>(
   endpoint: string
 ): Promise<T> {
   let raw = "";
-  for (let round = 0; round < 2; round++) {
+  let lastAttemptJson = "";
+  for (let round = 0; round < 3; round++) {
     const prompt =
       round === 0
         ? user
         : `${user}\n\nYour previous reply could not be used. It failed with: ${raw.slice(
             0,
-            400
-          )}\nReturn ONLY valid JSON matching the required shape. No prose, no markdown fences.`;
+            1200
+          )}\n\nYour previous reply was:\n${lastAttemptJson.slice(
+            0,
+            4000
+          )}\n\nReturn the COMPLETE corrected JSON with ONLY the listed fields fixed, keeping everything else unchanged. Return ONLY valid JSON matching the required shape. No prose, no markdown fences.`;
     const result = await chainText(
       [
         { role: "system", content: system },
@@ -247,12 +255,13 @@ export async function aiJson<T>(
       endpoint,
       true
     );
+    lastAttemptJson = result.text;
     try {
       const parsed = JSON.parse(extractJson(result.text));
       const validated = schema.safeParse(parsed);
       if (validated.success) return validated.data;
       raw = `schema validation failed: ${validated.error.issues
-        .slice(0, 3)
+        .slice(0, 8)
         .map((i) => `${i.path.join(".")}: ${i.message}`)
         .join("; ")}`;
     } catch (err) {
